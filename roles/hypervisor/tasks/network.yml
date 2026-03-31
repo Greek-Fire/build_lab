@@ -1,0 +1,29 @@
+---
+- name: Check if default network exists
+  ansible.builtin.command: virsh net-info {{ libvirt_default_network.name }}
+  register: net_check
+  changed_when: false
+  failed_when: false
+
+- name: Render default network XML
+  ansible.builtin.template:
+    src: network.xml.j2
+    dest: /tmp/libvirt-default.xml
+    mode: "0644"
+  when: net_check.rc != 0
+
+- name: Define default network
+  ansible.builtin.command: virsh net-define /tmp/libvirt-default.xml
+  when: net_check.rc != 0
+
+- name: Autostart default network
+  ansible.builtin.command: virsh net-autostart {{ libvirt_default_network.name }}
+  register: net_autostart
+  changed_when: "'marked as autostarted' in net_autostart.stdout"
+  failed_when: false
+
+- name: Start default network
+  ansible.builtin.command: virsh net-start {{ libvirt_default_network.name }}
+  register: net_start
+  changed_when: "'started' in net_start.stdout"
+  failed_when: false

@@ -1,0 +1,10 @@
+- include_tasks: pre_tasks.yml
+
+- name: Configure libvirt services
+  ansible.builtin.import_tasks: services.yml
+
+- name: Configure libvirt networking
+  ansible.builtin.import_tasks: network.yml
+
+- name: Configure libvirt storage
+  ansible.builtin.import_tasks: storage.yml

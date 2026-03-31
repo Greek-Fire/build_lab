@@ -1,0 +1,35 @@
+---
+- name: Enable libvirt modular sockets
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - virtqemud.socket
+    - virtqemud-ro.socket
+    - virtqemud-admin.socket
+    - virtnetworkd.socket
+    - virtnetworkd-ro.socket
+    - virtnetworkd-admin.socket
+    - virtstoraged.socket
+    - virtstoraged-ro.socket
+    - virtstoraged-admin.socket
+    - virtsecretd.socket
+    - virtsecretd-ro.socket
+    - virtsecretd-admin.socket
+    - virtnodedevd.socket
+    - virtnodedevd-ro.socket
+    - virtnodedevd-admin.socket
+    - virtnwfilterd.socket
+    - virtnwfilterd-ro.socket
+    - virtnwfilterd-admin.socket
+    - virtinterfaced.socket
+    - virtinterfaced-ro.socket
+    - virtinterfaced-admin.socket
+
+- name: Disable legacy libvirtd service
+  ansible.builtin.systemd:
+    name: libvirtd
+    state: stopped
+    enabled: false
+  failed_when: false

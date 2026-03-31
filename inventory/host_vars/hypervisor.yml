@@ -1,0 +1,44 @@
+rhsm_auto_attach: true
+rhsm_force_register: false
+
+# Repos to enable after registration, if needed
+rhsm_enable_repos: 
+- rhel-9-for-x86_64-baseos-rpms
+- rhel-9-for-x86_64-appstream-rpms
+
+# Kernel/package checks
+expected_kernel_major: "5"
+fail_if_not_rhel: true
+
+# Virtualization packages for RHEL 9
+virtualization_packages:
+  - qemu-kvm
+  - libvirt
+  - virt-install
+  - virt-viewer
+  - guestfs-tools
+  - virt-top
+
+libvirt_storage_pool_name: default
+libvirt_storage_pool_path: /var/lib/libvirt/images
+libvirt_storage_pool_type: dir
+libvirt_storage_pool:
+- name: hypervisor
+  type: lvm
+  disks:
+  - /dev/nvme1n1
+  volumes:
+  - name: vm_images
+    size: 600G
+    fs_type: xfs
+    mount_point: /var/lib/libvirt/images
+    state: present
+
+libvirt_default_network:
+  name: default
+  bridge: virbr0
+  network: 192.168.10.0
+  netmask: 255.255.255.0
+  gateway: 192.168.10.1
+  dhcp_start: 192.168.10.2
+  dhcp_end: 192.168.10.254

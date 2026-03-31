@@ -1,0 +1,40 @@
+---
+
+---
+- name: Configure local storage layout for virtualization
+  ansible.builtin.include_role:
+    name: redhat.rhel_system_roles.storage
+  vars:
+    storage_pools: "{{ libvirt_storage_pool}}"
+
+- name: Check if storage pool exists
+  ansible.builtin.command: virsh pool-info {{ libvirt_storage_ }}
+  register: pool_check
+  changed_when: false
+  failed_when: false
+
+- name: Define storage pool
+  ansible.builtin.command: >
+    virsh pool-define-as {{ libvirt_storage_pool_name }} {{ libvirt_storage_pool_type }}
+    --target {{ libvirt_storage_pool_path }}
+  when: pool_check.rc != 0
+  register: pool_define
+  changed_when: "'defined' in pool_define.stdout"
+
+- name: Enable storage pool autostart
+  ansible.builtin.command: virsh pool-autostart {{ libvirt_storage_pool_name}}
+  register: pool_autostart
+  changed_when: "'marked as autostarted' in pool_autostart.stdout"
+  failed_when:
+  - pool_autostart.rc != 0
+  - "'already' not in (pool_autostart.stderr | default('') | lower)"
+  - "'already' not in (pool_autostart.stdout | default('') | lower)"
+
+- name: Start storage pool
+  ansible.builtin.command: virsh pool-start {{ libvirt_storage_pool_name}}
+  register: pool_start
+  changed_when: "'started' in pool_start.stdout"
+  failed_when:
+  - pool_start.rc != 0
+  - "'already active' not in (pool_start.stderr | default('') | lower)"
+  - "'already active' not in (pool_start.stdout | default('') | lower)"
