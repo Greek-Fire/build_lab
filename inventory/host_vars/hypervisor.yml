@@ -1,10 +1,34 @@
 rhsm_auto_attach: true
 rhsm_force_register: false
 
+firewall:
+  - service: ssh
+    zone: public
+    state: enabled
+    permanent: true
+    runtime: true
+  - service: https
+    zone: public
+    state: enabled
+    permanent: true
+    runtime: true
+  - service: cockpit
+    zone: public
+    state: enabled
+    permanent: true
+    runtime: true
+  - masquerade: true
+    zone: public
+    state: enabled
+    permanent: true
+    runtime: true
+
 # Repos to enable after registration, if needed
 rhsm_enable_repos: 
-- rhel-9-for-x86_64-baseos-rpms
-- rhel-9-for-x86_64-appstream-rpms
+- name: rhel-9-for-x86_64-baseos-rpms
+  state: enabled
+- name: rhel-9-for-x86_64-appstream-rpms
+  state: enabled
 
 # Kernel/package checks
 expected_kernel_major: "5"
@@ -18,20 +42,34 @@ virtualization_packages:
   - virt-viewer
   - guestfs-tools
   - virt-top
+  - cockpit
+  - cockpit-machines
+  - policycoreutils
+  - policycoreutils-python-utils
 
 libvirt_storage_pool_name: default
 libvirt_storage_pool_path: /var/lib/libvirt/images
 libvirt_storage_pool_type: dir
+
+nvme_partition:
+  disk: /dev/nvme1n1
+  number: "4"
+  part_start: 112GiB
+  part_end: 722GiB 
+
+storage_safe_mode: false
 libvirt_storage_pool:
 - name: hypervisor
   type: lvm
   disks:
-  - /dev/nvme1n1
+  - /dev/nvme1n1p4
   volumes:
   - name: vm_images
-    size: 600G
+    size: 600 GiB
     fs_type: xfs
     mount_point: /var/lib/libvirt/images
+    mount_user: qemu
+    mount_group: qemu
     state: present
 
 libvirt_default_network:

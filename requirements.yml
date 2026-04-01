@@ -1,4 +1,5 @@
 collections:
+  - name: community.general
   - name: redhat.satellite
   - name: redhat.rhel_system_roles
   - name: ansible.posix 

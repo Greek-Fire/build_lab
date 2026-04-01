@@ -1,14 +1,40 @@
 ---
+- name: Ensure partition exists
+  community.general.parted:
+    device: "{{ nvme_partition.disk }}"
+    label: gpt
+    number: "{{ nvme_partition.number }}"
+    part_start: "{{ nvme_partition.part_start }}"
+    part_end: "{{ nvme_partition.part_end }}"
+    state: present
+  when: nvme_partition is defined
 
----
-- name: Configure local storage layout for virtualization
-  ansible.builtin.include_role:
-    name: redhat.rhel_system_roles.storage
-  vars:
-    storage_pools: "{{ libvirt_storage_pool}}"
+#- name: Configure local storage layout for virtualization
+#  ansible.builtin.include_role:
+#    name: redhat.rhel_system_roles.storage
+#  vars:
+#    storage_pools: "{{ libvirt_storage_pool}}"
+
+- name: Ensure SELinux is enforcing
+  ansible.builtin.selinux:
+    policy: targeted
+    state: enforcing
+
+- name: Set SELinux context for libvirt images directory
+  ansible.builtin.command: >
+    semanage fcontext -a -t virt_image_t "{{ libvirt_storage_pool_path }}(/.*)?"
+  args:
+    creates: "/etc/selinux/targeted/contexts/files/file_contexts.local"
+  register: semanage_result
+  failed_when: false
+  changed_when: "'already defined' not in semanage_result.stderr | default('')"
+
+- name: Apply SELinux context
+  ansible.builtin.command: restorecon -Rv {{ libvirt_storage_pool_path }}
+  changed_when: false
 
 - name: Check if storage pool exists
-  ansible.builtin.command: virsh pool-info {{ libvirt_storage_ }}
+  ansible.builtin.command: virsh pool-info {{ libvirt_storage_pool_name }}
   register: pool_check
   changed_when: false
   failed_when: false

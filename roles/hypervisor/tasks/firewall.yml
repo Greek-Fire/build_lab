@@ -1,0 +1,4 @@
+---
+- name: Configure host firewall using RHEL system role
+  ansible.builtin.include_role:
+    name: redhat.rhel_system_roles.firewall

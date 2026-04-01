@@ -1,1 +1,8 @@
 ---
+- hosts: hypervisor
+  vars_files:
+  - facts.yml
+  become: true
+  tasks:
+  - include_role:
+      name: hypervisor

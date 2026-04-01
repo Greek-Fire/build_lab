@@ -8,3 +8,6 @@
 
 - name: Configure libvirt storage
   ansible.builtin.import_tasks: storage.yml
+
+- name: Configure host firewall using RHEL system role
+  ansible.builtin.import_tasks: firewall.yml

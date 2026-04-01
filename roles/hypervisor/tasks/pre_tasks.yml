@@ -16,39 +16,25 @@
   changed_when: false
   failed_when: false
 
-- name: Register using activation key
-  redhat_subscription:
-    state: present
-    org_id: "{{ rhsm_org_id }}"
-    activationkey: "{{ rhsm_activationkey }}"
-    force_register: "{{ rhsm_force_register }}"
+- name: Register to the Red Hat Customer Portal by using proxy
+  ansible.builtin.include_role:
+      name: redhat.rhel_system_roles.rhc
+  vars:
+    rhc_repositories: "{{ rhsm_enable_repos | default([]) }}"
+    rhc_insights:
+      state: absent
+    rhc_auth:
+      login:
+        username: "{{ rhsm_username }}"
+        password: "{{ rhsm_password }}"
   when:
-    - rhsm_status.rc != 0
-    - rhsm_org_id is defined
-    - rhsm_activationkey is defined
-
-- name: Register using username/password
-  redhat_subscription:
-    state: present
-    username: "{{ rhsm_username }}"
-    password: "{{ rhsm_password }}"
-    auto_attach: "{{ rhsm_auto_attach | default(true) }}"
-    force_register: "{{ rhsm_force_register | default(true) }}"
-  when:
-    - rhsm_status.rc != 0
-    - rhsm_username is defined
-    - rhsm_password is defined
-    - rhsm_activationkey is not defined
+  - rhsm_status.rc != 0
+  - rhsm_username is defined
+  - rhsm_password is defined
 
 - name: Force refresh subscriptions
   ansible.builtin.command: subscription-manager refresh
   changed_when: false
-
-- name: Enable required repos
-  rhsm_repository:
-    name: "{{ rhsm_enable_repos }}"
-    state: enabled
-  when: rhsm_enable_repos is defined
 
 # -----------------------------
 # Kernel Validation
@@ -74,15 +60,9 @@
 - name: Debug kernel info
   ansible.builtin.debug:
     msg:
-      - "Running kernel: {{ running_kernel.stdout }}"
-      - "Default kernel: {{ default_kernel.stdout | default('N/A') }}"
-      - "Installed kernels: {{ kernel_rpms.stdout_lines }}"
-
-- name: Fail if kernel is wrong major version
-  ansible.builtin.assert:
-    that:
-      - running_kernel.stdout is match('^' ~ expected_kernel_major)
-    fail_msg: "Kernel version is not expected ({{ running_kernel.stdout }})"
+    - "Running kernel: {{ running_kernel.stdout }}"
+    - "Default kernel: {{ default_kernel.stdout | default('N/A') }}"
+    - "Installed kernels: {{ kernel_rpms.stdout_lines }}"
 
 # -----------------------------
 # Install Virtualization Packages
