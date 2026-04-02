@@ -1,0 +1,61 @@
+rhsm_enable_repos: 
+- name: rhel-9-for-x86_64-baseos-rpms
+  state: enabled
+- name: rhel-9-for-x86_64-appstream-rpms
+  state: enabled
+- name: satellite-6.16-for-rhel-9-x86_64-rpms
+  state: enabled
+- name: satellite-maintenance-6.16-for-rhel-9-x86_64-rpms
+  state: enabled
+
+network_connections:
+- name: enp1s0
+  interface_name: enp1s0
+  type: ethernet
+  state: up
+  autoconnect: true
+  ip:
+    dhcp4: false
+    auto6: false
+    address:
+    - 192.168.11.11/24
+    gateway4: 192.168.11.1
+    dns: 192.168.11.1
+    dns_search: lab.lou
+
+firewall:
+- service: http
+  state: enabled
+- service: https
+  state: enabled
+- service: puppetmaster
+  state: enabled
+
+satellite_organization: hallas
+satellite_location: memphis
+
+safe_mode: false
+storage_pools:
+- name: rhel
+  type: lvm
+  disks:
+  - /dev/vda3
+  volumes:
+  - name: pgsql
+    type: lvm
+    size: 20 GiB
+    fs_type: xfs
+    mount_point: /var/lib/pgsql
+    state: present
+  - name: puppetlabs
+    type: lvm
+    size: 1 GiB
+    fs_type: xfs
+    mount_point: /opt/puppetlabs
+    state: present
+  - name: pulp
+    type: lvm
+    size: 200 GiB
+    fs_type: xfs
+    mount_point: /var/lib/pulp
+    state: present

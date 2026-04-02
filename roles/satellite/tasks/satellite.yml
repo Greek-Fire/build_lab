@@ -1,0 +1,14 @@
+- name: Setup /etc/host
+  template:
+    dest: /etc/hosts
+    src: hosts.j2
+    owner: root
+    group: root
+
+- name: Configure Satellite Server
+  ansible.builtin.command: >
+    satellite-installer --scenario satellite \
+    --foreman-initial-organization {{ satellite_organization }} \
+    --foreman-initial-location {{ satellite_location }} \
+    --foreman-initial-admin-username {{ satellite_admin_username }} \
+    --foreman-initial-admin-password {{ satellite_admin_password }}

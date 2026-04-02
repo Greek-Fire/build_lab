@@ -33,19 +33,22 @@ rhsm_enable_repos:
 # Kernel/package checks
 expected_kernel_major: "5"
 fail_if_not_rhel: true
-
+admin_user: greek_fire
 # Virtualization packages for RHEL 9
 virtualization_packages:
-  - qemu-kvm
-  - libvirt
-  - virt-install
-  - virt-viewer
-  - guestfs-tools
-  - virt-top
-  - cockpit
-  - cockpit-machines
-  - policycoreutils
-  - policycoreutils-python-utils
+- lorax
+- genisoimage
+- pykickstart
+- qemu-kvm
+- libvirt
+- virt-install
+- virt-viewer
+- guestfs-tools
+- virt-top
+- cockpit
+- cockpit-machines
+- policycoreutils
+- policycoreutils-python-utils
 
 libvirt_storage_pool_name: default
 libvirt_storage_pool_path: /var/lib/libvirt/images
@@ -73,10 +76,28 @@ libvirt_storage_pool:
     state: present
 
 libvirt_default_network:
-  name: default
+  name: 192.168.11.0 
   bridge: virbr0
-  network: 192.168.10.0
+  network: 192.168.11.0
   netmask: 255.255.255.0
-  gateway: 192.168.10.1
-  dhcp_start: 192.168.10.2
-  dhcp_end: 192.168.10.254
+  gateway: 192.168.11.1
+  dhcp_start: 192.168.11.2
+  dhcp_end: 192.168.11.254
+  xml_network_path: /tmp/libvirt-network.xml
+
+satellite_vm:
+  name: satellite
+  fqdn: satellite.lab.lou
+  ip: 192.168.11.11
+  netmask: 255.255.255.0
+  gateway: 192.168.11.1
+  nameserver: 192.168.11.1
+  memory_mb: 20480
+  vcpus: 4
+  disk_gb: 300
+  network: 192.168.11.0
+  ks_dir: "{{ libvirt_storage_pool_path }}/kickstarts"
+  iso_dir: "{{ libvirt_storage_pool_path }}/boot"
+  ks_file: ks.cfg
+  ks_iso: satellite-ks.iso
+  rhel9_bootiso: "{{ libvirt_storage_pool_path }}/boot/rhel-9.7-x86_64-dvd.iso"

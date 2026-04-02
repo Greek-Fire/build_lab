@@ -1,8 +1,8 @@
 ---
-- hosts: hypervisor
+- hosts: satellite
   vars_files:
   - facts.yml
   become: true
   tasks:
   - include_role:
-      name: hypervisor
+      name: satellite

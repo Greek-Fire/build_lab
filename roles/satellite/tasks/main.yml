@@ -1,0 +1,17 @@
+#- name: Register To Red Hat Subscription Management
+#  ansible.builtin.include_tasks: register.yml
+#
+#- name: Configure host network using RHEL system role
+#  ansible.builtin.include_role:
+#    name: redhat.rhel_system_roles.network
+#
+#- name: Create Satellite storage layout
+#  ansible.builtin.include_role:
+#    name: redhat.rhel_system_roles.storage
+#
+#- name: Configure host firewall using RHEL system role
+#  ansible.builtin.include_role:
+#    name: redhat.rhel_system_roles.firewall
+#
+- name: Configure Satellite Server
+  ansible.builtin.include_tasks: satellite.yml

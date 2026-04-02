@@ -1,0 +1,55 @@
+text
+cdrom
+lang en_US.UTF-8
+keyboard us
+timezone America/Chicago --utc
+
+network --bootproto=static --ip={{ satellite_vm.ip }} --netmask={{ satellite_vm.netmask }} --gateway={{ satellite_vm.gateway }} --nameserver={{ satellite_vm.nameserver }} --hostname={{ satellite_vm.fqdn }} --activate
+
+rootpw --iscrypted {{ root_hash }}
+
+user --name=greek_fire --groups=wheel --password={{ admin_hash }} --iscrypted 
+sshkey --username=greek_fire "{{ admin_ssh_key }}"
+
+firewall --enabled --service=ssh
+selinux --enforcing
+
+firstboot --disable
+services --enabled=sshd
+
+reboot
+
+ignoredisk --only-use=vda
+clearpart --all --initlabel
+
+reqpart
+
+# LVM layout
+part /boot --fstype=xfs --size=2048
+part /boot/efi --fstype=efi --size=1024 --fsoptions="umask=0077,shortname=winnt"
+part pv.01 --size=1 --grow
+
+volgroup rhel pv.01
+
+logvol /         --vgname=rhel --name=root      --fstype=xfs --size=5120
+logvol /var      --vgname=rhel --name=var       --fstype=xfs --size=5120
+logvol /home     --vgname=rhel --name=home      --fstype=xfs --size=5120 --fsoptions="nodev"
+logvol /tmp      --vgname=rhel --name=tmp       --fstype=xfs --size=5120 --fsoptions="nodev,nosuid,noexec"
+logvol /usr      --vgname=rhel --name=usr       --fstype=xfs --size=10192
+logvol /var/log  --vgname=rhel --name=log       --fstype=xfs --size=5120
+logvol /var/tmp  --vgname=rhel --name=vartmp    --fstype=xfs --size=3072 --fsoptions="nodev,nosuid,noexec"
+logvol /var/log/audit --vgname=rhel --name=audit --fstype=xfs --size=3072
+
+logvol swap  --vgname=rhel --name=swap --size=4096
+
+skipx
+
+%packages
+@^minimal-environment
+wget
+curl
+bash-completion
+chrony
+-iwl*firmware*
+-plymouth
+%end
