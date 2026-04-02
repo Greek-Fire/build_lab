@@ -1,8 +1,8 @@
 ---
 - hosts: satellite
   vars_files:
-  - vault/facts.yml
+  - ~/.vault/facts.yml
   become: true
   tasks:
   - include_role:
-      name: satellite
+      name: install_satellite
