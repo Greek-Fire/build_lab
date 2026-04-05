@@ -1,0 +1,4 @@
+satellite_manifest_download: true
+satellite_rhsm_username: "{{ rhsm_username }}"
+satellite_rhsm_password: "{{ rhsm_password }}"
+satellite_manifest_uuid: "01234567-89ab-cdef-0123-456789abcdef"
