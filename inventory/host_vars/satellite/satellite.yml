@@ -1,0 +1,5 @@
+satellite_organization: hallas
+satellite_location: memphis
+satellite_server_url: "https://satellite.lab.lou"
+satellite_username: "{{ satellite_admin_username }}"
+satellite_password: "{{ satellite_admin_password }}"

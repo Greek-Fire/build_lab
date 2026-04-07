@@ -31,9 +31,6 @@ firewall:
 - service: puppetmaster
   state: enabled
 
-satellite_organization: hallas
-satellite_location: memphis
-
 safe_mode: false
 storage_pools:
 - name: rhel
