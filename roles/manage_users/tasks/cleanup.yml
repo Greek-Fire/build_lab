@@ -1,0 +1,23 @@
+---
+- name: Build list of users that should be absent
+  no_log: true
+  ansible.builtin.set_fact:
+    _manage_users_absent: >-
+      {{
+        _manage_users_sanitized
+        | selectattr('state', 'defined')
+        | selectattr('state', 'equalto', 'absent')
+        | list
+      }}
+
+- name: Remove users explicitly set to absent
+  become: true
+  ansible.builtin.user:
+    name: "{{ item.username }}"
+    password_lock: true
+    shell: "{{ item.disabled_shell | default('/sbin/nologin') }}"
+    expires: "{{ item.disabled_expires | default(0) }}"
+    state: present
+  loop: "{{ _manage_users_absent }}"
+  loop_control:
+    label: "{{ item.username }}"

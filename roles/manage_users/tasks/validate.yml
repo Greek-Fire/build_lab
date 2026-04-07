@@ -1,0 +1,69 @@
+---
+
+- name: Build sanitized manage_users list
+  ansible.builtin.set_fact:
+    _manage_users_sanitized: "{{ manage_users | normalize_manage_users }}"
+  no_log: true
+
+- name: Ensure manage_users is a list
+  ansible.builtin.assert:
+    that:
+      - _manage_users_sanitized is iterable
+      - _manage_users_sanitized is not string
+    fail_msg: "_manage_users_sanitized must be a list of user definitions"
+
+- name: Ensure each user has a username
+  ansible.builtin.assert:
+    that:
+      - item.username is defined
+      - item.username is string
+      - item.username | length > 0
+    fail_msg: "Each entry in _manage_users_sanitized must define a non-empty username"
+  loop: "{{ _manage_users_sanitized }}"
+  loop_control:
+    label: "{{ item.username | default('undefined') }}"
+
+- name: Ensure state is valid when defined
+  ansible.builtin.assert:
+    that:
+      - item.state is not defined or 
+        item.state in ['present', 'absent']
+    fail_msg: "User {{ item.username | default('undefined') }} has invalid state"
+  loop: "{{ _manage_users_sanitized }}"
+  loop_control:
+    label: "{{ item.username | default('undefined') }}"
+
+- name: Build declared group name list
+  ansible.builtin.set_fact:
+    _manage_users_declared_groups: "{{ manage_groups | default([]) | map(attribute='name') | list }}"
+
+- name: Ensure all referenced groups exist in manage_groups
+  ansible.builtin.assert:
+    that:
+      - item.1 in _manage_users_declared_groups
+    fail_msg: "User {{ item.0.username }} references undefined group {{ item.1 }}. Add it to manage_groups."
+  loop: "{{ _manage_users_sanitized | subelements('groups', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.username }} -> {{ item.1 }}"
+  when: (manage_groups | default([])) | length > 0
+
+- name: Ensure password fields are not both defined
+  ansible.builtin.assert:
+    that:
+      - not (item.password_hash is defined and item.password is defined)
+    fail_msg: "User {{ item.username }} cannot define both password_hash and password"
+  loop: "{{ _manage_users_sanitized }}"
+  loop_control:
+    label: "{{ item.username }}"
+
+- name: Ensure update_password is valid when defined
+  ansible.builtin.assert:
+    that:
+      - item.update_password is not defined or item.update_password in ['always', 'on_create']
+    fail_msg: "User {{ item.username }} has invalid update_password value"
+  loop: "{{ _manage_users_sanitized }}"
+  loop_control:
+    label: "{{ item.username }}"
+
+- include_tasks: cleanup.yml
+- include_tasks: users.yml

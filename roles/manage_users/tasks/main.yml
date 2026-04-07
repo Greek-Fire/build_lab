@@ -1,0 +1,5 @@
+- include_role: 
+    name: manage_groups
+  when: manage_groups | length > 0
+  
+- include_tasks: validate.yml

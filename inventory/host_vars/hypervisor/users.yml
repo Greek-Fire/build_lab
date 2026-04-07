@@ -1,12 +1,9 @@
 manage_users:
 - username: foreman-compute
   state: present
-  comment: "Alice Admin"
+  comment: "Access to Hypervisor"
+  ssh_authorized_keys:
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC7gJBjiYAPkg7vu0FBAGCvIhRghYFF7VruDVITzjHRd63j5FELpwLZl1IQE+dIbPHrkSXWTVzCFJXtLXXptB5OJXFYPKgXyBjEm+IqcfjkBABgTPIcGujLtokA8e5hP1aL0YkQJcyOW0SvXF4lGHHXM9USjExN/HlqSWYRKy+Y/4aLbIopFyVx/iO1FzuyaGPOiADsfW6keCKhYrh/qFUGI9uWG+B3Poz2eENXhpfHcbF/7arB5wKFzI2syTgwbPjtDG0ZdfQShZEPQ1PWxBj0ZJn+rA2XiQnocHlFksFfQ3KKCHncqPjeC+CnUDpavSpwwAby1cYq0k60VVUL2rouLAaCTqjGVKYLTgZy0Zv6lkGrKHNxZ60Q7ZYbbs54yxcqdj+UnghykIxRWzVAxK52D9UU9YB+ULaiOwXFvo2Uxn3G7OPpYis9yeCNA8U7CCWll0w7qs3EkPtEmooEIrI+XiDJWXvtuSK6wLBSInR6sb2/NjHPoI73/JzrDSpdwyM=
   shell: /bin/bash
-  create_home: true
-  sudo: false
-  sudo_nopassword: false
-  #ssh_authorized_keys:
-  #- "{{ foreman-compute_authorized_key }}"
   groups:
   - libvirt

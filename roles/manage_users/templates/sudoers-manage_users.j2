@@ -1,0 +1,6 @@
+# Ansible managed: local user sudo access
+# Do not edit manually.
+
+{% for user in _manage_users_with_sudo %}
+{{ user.username }} ALL=({{ user.sudo_runas | default('ALL') }}) {{ 'NOPASSWD: ' if user.sudo_nopasswd | default(false) else '' }}{% if user.sudo_commands is defined %}{% if user.sudo_commands is string %}{{ user.sudo_commands }}{% else %}{{ user.sudo_commands | join(', ') }}{% endif %}{% else %}ALL{% endif %}
+{% endfor %}

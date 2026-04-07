@@ -1,0 +1,38 @@
+---
+- name: Build list of present users with sudo enabled
+  ansible.builtin.set_fact:
+    _manage_users_with_sudo: >-
+      {{
+        manage_users
+        | rejectattr('state', 'defined')
+        | selectattr('sudo', 'defined')
+        | selectattr('sudo', 'equalto', true)
+        | list
+        +
+        (
+          manage_users
+          | selectattr('state', 'defined')
+          | selectattr('state', 'equalto', 'present')
+          | selectattr('sudo', 'defined')
+          | selectattr('sudo', 'equalto', true)
+          | list
+        )
+      }}
+
+- name: Ensure managed sudoers file is present when needed
+  become: true
+  ansible.builtin.template:
+    src: sudoers-manage_users.j2
+    dest: /etc/sudoers.d/ansible_managed_users
+    owner: root
+    group: root
+    mode: '0440'
+    validate: /usr/sbin/visudo -cf %s
+  when: _manage_users_with_sudo | length > 0
+
+- name: Remove managed sudoers file when no sudo users are defined
+  become: true
+  ansible.builtin.file:
+    path: /etc/sudoers.d/ansible_managed_users
+    state: absent
+  when: _manage_users_with_sudo | length == 0

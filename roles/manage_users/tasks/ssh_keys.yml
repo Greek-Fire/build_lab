@@ -1,0 +1,129 @@
+---
+- name: Build list of present users with any SSH configuration defined
+  ansible.builtin.set_fact:
+    _manage_users_with_ssh: >-
+      {{
+        manage_users_present
+        | selectattr('ssh_authorized_keys', 'defined')
+        | list
+        + manage_users_present
+        | selectattr('ssh_keypair', 'defined')
+        | list
+      }}
+    _manage_users_with_ssh_keypair: >-
+      {{
+        manage_users_present
+        | selectattr('ssh_keypair', 'defined')
+        | list
+      }}
+
+- name: Build list of present users with ssh_keypair defined
+  no_log: true
+  ansible.builtin.set_fact:
+    _manage_users_with_ssh_keypair_private_key: >-
+      {{
+        manage_users
+        | selectattr('ssh_keypair', 'defined')
+        | list
+      }}
+
+- name: Ensure private key filename is valid when ssh_keypair is used
+  ansible.builtin.assert:
+    that:
+      - item.ssh_keypair.private_key_file is not defined or '/' not in item.ssh_keypair.private_key_file
+    fail_msg: "User {{ item.username }} has invalid ssh_keypair.private_key_file. Use only a filename, not a path."
+  loop: "{{ _manage_users_with_ssh_keypair }}"
+  loop_control:
+    label: "{{ item.username }}"
+  when: item.ssh_keypair is defined
+
+- name: Ensure public key filename is valid when ssh_keypair is used
+  ansible.builtin.assert:
+    that:
+      - item.ssh_keypair.public_key_file is not defined or '/' not in item.ssh_keypair.public_key_file
+    fail_msg: "User {{ item.username }} has invalid ssh_keypair.public_key_file. Use only a filename, not a path."
+  loop: "{{ _manage_users_with_ssh_keypair }}"
+  loop_control:
+    label: "{{ item.username }}"
+  when: item.ssh_keypair is defined
+
+- name: Ensure .ssh directory exists for users with authorized_keys
+  become: true
+  ansible.builtin.file:
+    path: "{{ item.home | default('/home/' ~ item.username) }}/.ssh"
+    state: directory
+    owner: "{{ item.username }}"
+    group: "{{ item.primary_group | default(item.username) }}"
+    mode: '0700'
+  loop: "{{ _manage_users_with_ssh }}"
+  loop_control:
+    label: "{{ item.username }}"
+
+- name: Enforce authorized_keys content
+  become: true
+  ansible.builtin.copy:
+    dest: "{{ item.home | default('/home/' ~ item.username) }}/.ssh/authorized_keys"
+    content: "{{ (item.ssh_authorized_keys | default([])) | join('\n') ~ '\n' }}"
+    owner: "{{ item.username }}"
+    group: "{{ item.primary_group | default(item.username) }}"
+    mode: '0600'
+  loop: "{{ _manage_users_with_ssh }}"
+  loop_control:
+    label: "{{ item.username }}"
+
+- name: Install private SSH key
+  become: true
+  ansible.builtin.copy:
+    dest: >-
+      {{
+        (item.home | default('/home/' ~ item.username))
+        ~ '/.ssh/'
+        ~ (item.ssh_keypair.private_key_file | default('private_key'))
+      }}
+    content: "{{ item.ssh_keypair.private_key }}"
+    owner: "{{ item.username }}"
+    group: "{{ item.primary_group | default(item.username) }}"
+    mode: '0600'
+  loop: "{{ _manage_users_with_ssh_keypair_private_key }}"
+  loop_control:
+    label: "{{ item.username }}"
+  no_log: true
+
+- name: Install public SSH key
+  become: true
+  ansible.builtin.copy:
+    dest: >-
+      {{
+        (item.home | default('/home/' ~ item.username))
+        ~ '/.ssh/'
+        ~ (item.ssh_keypair.public_key_file | default('public_key.pub'))
+      }}
+    content: "{{ item.ssh_keypair.public_key ~ '\n' }}"
+    owner: "{{ item.username }}"
+    group: "{{ item.primary_group | default(item.username) }}"
+    mode: '0644'
+  loop: "{{ _manage_users_with_ssh_keypair }}"
+  loop_control:
+    label: "{{ item.username }}"
+
+- name: Ensure SSH config contains managed identity file block
+  become: true
+  ansible.builtin.blockinfile:
+    path: "{{ (item.home | default('/home/' ~ item.username)) }}/.ssh/config"
+    create: true
+    owner: "{{ item.username }}"
+    group: "{{ item.primary_group | default(item.username) }}"
+    mode: '0600'
+    marker: "# {mark} ANSIBLE MANAGED SSH IDENTITY"
+    block: |
+      Host {{ item.ssh_config.host | default('*') }}
+          IdentityFile {{
+            (item.home | default('/home/' ~ item.username))
+            ~ '/.ssh/'
+            ~ (item.ssh_keypair.private_key_file | default('private_key'))
+          }}
+  loop: "{{ _manage_users_with_ssh_keypair }}"
+  loop_control:
+    label: "{{ item.username }}"
+  when:
+    - item.ssh_config.manage | default(true) | bool
