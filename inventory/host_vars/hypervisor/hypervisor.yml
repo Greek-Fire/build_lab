@@ -2,26 +2,26 @@ rhsm_auto_attach: true
 rhsm_force_register: false
 
 firewall:
-  - service: ssh
-    zone: public
-    state: enabled
-    permanent: true
-    runtime: true
-  - service: https
-    zone: public
-    state: enabled
-    permanent: true
-    runtime: true
-  - service: cockpit
-    zone: public
-    state: enabled
-    permanent: true
-    runtime: true
-  - masquerade: true
-    zone: public
-    state: enabled
-    permanent: true
-    runtime: true
+- service: ssh
+  zone: public
+  state: enabled
+  permanent: true
+  runtime: true
+- service: https
+  zone: public
+  state: enabled
+  permanent: true
+  runtime: true
+- service: cockpit
+  zone: public
+  state: enabled
+  permanent: true
+  runtime: true
+- masquerade: true
+  zone: public
+  state: enabled
+  permanent: true
+  runtime: true
 
 # Repos to enable after registration, if needed
 rhsm_enable_repos: 

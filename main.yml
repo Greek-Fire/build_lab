@@ -1,8 +1,8 @@
 ---
-- hosts: satellite
+- hosts: hypervisor
   vars_files:
   - ~/.vault/facts.yml
   gather_facts: 0
   tasks:
   - include_role:
-      name: configure_satellite
+      name: manage_users

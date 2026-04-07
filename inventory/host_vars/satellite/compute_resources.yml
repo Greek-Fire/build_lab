@@ -1,0 +1,4 @@
+satellite_compute_resources:
+- name: hypber-v
+  provider: libvirt
+  url: qemu+ssh://root@hypervisor/system

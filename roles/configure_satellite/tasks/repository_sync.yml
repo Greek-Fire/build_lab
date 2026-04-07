@@ -1,0 +1,10 @@
+- name: Sync repository using exact name returned by Satellite
+  redhat.satellite.repository_sync:
+    username: "{{ satellite_username }}"
+    password: "{{ satellite_password }}"
+    server_url: "{{ satellite_server_url }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    organization: "{{ satellite_organization }}"
+    product: "{{ item.0.name }}"
+  loop: "{{ satellite_products | subelements('repository_sets') }}"
+  when: satellite_products is defined

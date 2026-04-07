@@ -1,0 +1,49 @@
+---
+- name: Ensure manage_groups is a list
+  ansible.builtin.assert:
+    that:
+      - manage_groups is iterable
+      - manage_groups is not string
+    fail_msg: "manage_groups must be a list of group definitions"
+
+- name: Ensure each group has a name
+  ansible.builtin.assert:
+    that:
+      - item.name is defined
+      - item.name is string
+      - item.name | length > 0
+    fail_msg: "Each item in manage_groups must define a non-empty name"
+  loop: "{{ manage_groups }}"
+  loop_control:
+    label: "{{ item.name | default('undefined') }}"
+
+- name: Ensure state is valid when defined
+  ansible.builtin.assert:
+    that:
+      - item.state is not defined or 
+        item.state in ['present', 'absent']
+    fail_msg: "Group {{ item.name | default('undefined') }} has invalid state. Allowed values: present, absent"
+  loop: "{{ manage_groups }}"
+  loop_control:
+    label: "{{ item.name | default('undefined') }}"
+
+- name: Ensure gid is numeric when defined
+  ansible.builtin.assert:
+    that:
+      - item.gid is not defined or
+        (item.gid | string is match('^[0-9]+$'))
+    fail_msg: "Group {{ item.name }} has a non-numeric gid"
+  loop: "{{ manage_groups }}"
+  loop_control:
+    label: "{{ item.name | default('undefined') }}"
+
+- name: Ensure groups are present
+  become: true
+  ansible.builtin.group:
+    name: "{{ item.name }}"
+    gid: "{{ item.gid | default(omit) }}"
+    system: "{{ item.system | default(omit) }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ manage_groups }}"
+  loop_control:
+    label: "{{ item.name }}"

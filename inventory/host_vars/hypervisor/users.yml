@@ -1,0 +1,12 @@
+manage_users:
+- username: foreman-compute
+  state: present
+  comment: "Alice Admin"
+  shell: /bin/bash
+  create_home: true
+  sudo: false
+  sudo_nopassword: false
+  #ssh_authorized_keys:
+  #- "{{ foreman-compute_authorized_key }}"
+  groups:
+  - libvirt

@@ -1,5 +1,14 @@
-#- include_role:
-#    name: redhat.satellite.manifest
+- include_role:
+    name: redhat.satellite.manifest
+  when: setup_manifest | bool
+
+- block:
+  - include_role:
+      name: redhat.satellite.repositories
+  - include_tasks: repository_sync.yml
+  when: 
+  - satellite_products | length > 0
+  - setup_repositories | bool
 
 - include_role:
-    name: redhat.satellite.repositories
+    name: redhat.satellite.compute_resources
