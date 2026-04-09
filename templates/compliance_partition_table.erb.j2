@@ -1,0 +1,79 @@
+<%#
+kind: ptable
+name: Compliance STIG Virtual
+model: Ptable
+oses:
+- AlmaLinux
+- CentOS
+- CentOS_Stream
+- Fedora
+- RedHat
+- Rocky
+-%>
+<%#
+  STIG-oriented partition table for virtual hosts.
+
+  Notes:
+  - Defaults to virt disk naming (vda), but can be overridden with host param part_device
+  - Uses separate mount points commonly expected for RHEL STIG-style builds
+  - Root LV grows to consume remaining free space
+  - UEFI-aware, with BIOS fallback
+  - Final compliance still depends on mount options, package set, auth, sysctl, services, etc.
+-%>
+
+<% if host_param('driverdisk_source') -%>
+driverdisk --source=<%= host_param('driverdisk_source') %>
+<% end -%>
+
+zerombr
+clearpart --all --initlabel
+
+<%
+  dev            = host_param('part_device') || 'vda'
+  fstype         = host_param('part_fstype') || 'xfs'
+  vgname         = host_param('part_vgname') || 'rhel'
+
+  boot_size      = host_param('part_boot_size') || '2048'
+  efi_size       = host_param('part_efi_size')  || '1024'
+  swap_size      = host_param('part_swap_size') || '4096'
+  root_size      = host_param('part_root_size') || '10240'
+  home_size      = host_param('part_home_size') || '5120'
+  tmp_size       = host_param('part_tmp_size')  || '5120'
+  var_size       = host_param('part_var_size')  || '8192'
+  varlog_size    = host_param('part_varlog_size') || '4096'
+  audit_size     = host_param('part_audit_size')  || '2048'
+
+  lv_swap        = host_param('part_swap_name') || 'swap'
+  lv_root        = host_param('part_root_name') || 'root'
+  lv_home        = host_param('part_home_name') || 'home'
+  lv_tmp         = host_param('part_tmp_name')  || 'tmp'
+  lv_var         = host_param('part_var_name')  || 'var'
+  lv_varlog      = host_param('part_varlog_name') || 'log'
+  lv_audit       = host_param('part_audit_name')  || 'audit'
+
+  pxe_loader     = @host.pxe_loader.to_s
+  is_uefi        = pxe_loader.include?('UEFI')
+-%>
+
+<% if is_uefi -%>
+part /boot/efi --fstype="efi" --ondisk=<%= dev %> --size=<%= efi_size %> --fsoptions="umask=0077,shortname=winnt"
+<% end -%>
+
+<% if @host.operatingsystem.family == 'Redhat' && @host.operatingsystem.major.to_i >= 7 -%>
+part /boot --fstype="<%= fstype %>" --ondisk=<%= dev %> --size=<%= boot_size %>
+<% else -%>
+part /boot --fstype="ext4" --ondisk=<%= dev %> --size=<%= boot_size %>
+<% end -%>
+
+part pv.01 --fstype="lvmpv" --ondisk=<%= dev %> --size=1 --grow
+
+volgroup <%= vgname %> --pesize=4096 pv.01
+
+
+logvol swap           --fstype="swap"          --size=<%= swap_size %>   --name=<%= lv_swap %>   --vgname=<%= vgname %>
+logvol /home          --fstype="<%= fstype %>" --size=<%= home_size %>   --name=<%= lv_home %>   --vgname=<%= vgname %>
+logvol /tmp           --fstype="<%= fstype %>" --size=<%= tmp_size %>    --name=<%= lv_tmp %>    --vgname=<%= vgname %>
+logvol /var           --fstype="<%= fstype %>" --size=<%= var_size %>    --name=<%= lv_var %>    --vgname=<%= vgname %>
+logvol /var/log       --fstype="<%= fstype %>" --size=<%= varlog_size %> --name=<%= lv_varlog %> --vgname=<%= vgname %>
+logvol /var/log/audit --fstype="<%= fstype %>" --size=<%= audit_size %>  --name=<%= lv_audit %>  --vgname=<%= vgname %>
+logvol /              --fstype="<%= fstype %>" --size=<%= root_size %>   --grow --name=<%= lv_root %>   --vgname=<%= vgname %>

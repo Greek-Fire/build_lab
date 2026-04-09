@@ -1,0 +1,50 @@
+- name: "Publish content views"
+  redhat.satellite.content_view_version:
+    username: "{{ satellite_username | default(omit) }}"
+    password: "{{ satellite_password | default(omit) }}"
+    server_url: "{{ satellite_server_url | default(omit) }}"
+    validate_certs: "{{ satellite_validate_certs | default(omit) }}"
+    organization: "{{ content_view.organization | default(satellite_organization) }}"
+    content_view: "{{ content_view.name | default(content_view.content_view) | default(content_view) }}"
+    description: "{{ content_view.description | default(omit) }}"
+    version: "{{ content_view.version | default(omit) }}"
+    lifecycle_environments: "{{ content_view.lifecycle_environments | default(omit) }}"
+    force_promote: "{{ content_view.force_promote | default(omit) }}"
+    force_yum_metadata_regeneration: "{{ content_view.force_yum_metadata_regeneration | default(omit) }}"
+    current_lifecycle_environment: "{{ content_view.current_lifecycle_environment | default(omit) }}"
+  async: "{{ satellite_content_view_publish_async | default(3600) }}"
+  poll: 0
+  loop: "{{ satellite_content_views }}"
+  loop_control:
+    loop_var: content_view
+    label: "{{ content_view.name | default(content_view) }}"
+  register: _publish_jobs
+
+- name: "Wait for all content view publish jobs"
+  ansible.builtin.async_status:
+    jid: "{{ item.ansible_job_id }}"
+  loop: "{{ _publish_jobs.results }}"
+  loop_control:
+    label: "{{ item.content_view.name | default(item.content_view) }}"
+  register: _publish_results
+  until: _publish_results.finished
+  retries: "{{ satellite_content_view_publish_retries | default(60) }}"
+  delay: "{{ satellite_content_view_publish_delay | default(30) }}"
+  ignore_errors: true
+
+- name: "Report content view publish results"
+  ansible.builtin.debug:
+    msg: >-
+      {{ item.item.content_view.name | default(item.item.content_view) }}:
+      {% if item.finished and not item.failed %}published successfully
+      {% elif item.failed %}FAILED - {{ item.msg | default('unknown error') }}
+      {% else %}still running
+      {% endif %}
+  loop: "{{ _publish_results.results }}"
+  loop_control:
+    label: "{{ item.item.content_view.name | default(item.item.content_view) }}"
+
+- name: "Fail if any content view publish jobs failed"
+  ansible.builtin.fail:
+    msg: "One or more content view publish jobs failed"
+  when: _publish_results.results | selectattr('failed', 'equalto', true) | list | length > 0

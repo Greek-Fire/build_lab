@@ -1,0 +1,9 @@
+---
+- hosts: satellite
+  vars_files:
+  - ~/.vault/facts.yml
+  gather_facts: 1
+  roles:
+  - role: install_satellite
+  - role: configure_satellite
+  - role: manage_users

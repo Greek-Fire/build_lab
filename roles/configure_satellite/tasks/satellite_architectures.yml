@@ -1,0 +1,10 @@
+- name: "Add Architectures"
+  redhat.satellite.architecture:
+    username: "{{ satellite_username | default(omit) }}"
+    password: "{{ satellite_password | default(omit) }}"
+    server_url: "{{ satellite_server_url | default(omit) }}"
+    validate_certs: "{{ satellite_validate_certs | default(omit) }}"
+    name: "{{ item.name | default(omit) }}"
+    state: "{{ item.state | default('present') }}"
+    operatingsystems: "{{ item.operating_systems | default(omit) }}"
+  loop: "{{ satellite_architectures }}"

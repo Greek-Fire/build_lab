@@ -1,7 +1,8 @@
 ---
-- hosts: all
+- hosts: hypervisor
+  become: true
   vars_files:
   - ~/.vault/facts.yml
-  gather_facts: 0
+  gather_facts: 1
   roles:
-  - role: manage_users
+  - role: hypervisor

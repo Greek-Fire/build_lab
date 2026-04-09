@@ -2,13 +2,121 @@
     name: redhat.satellite.manifest
   when: setup_manifest | bool
 
-- block:
-  - include_role:
-      name: redhat.satellite.repositories
-  - include_tasks: repository_sync.yml
+- include_role:
+    name: redhat.satellite.repositories
   when: 
   - satellite_products | length > 0
-  - setup_repositories | bool
+  - setup_products     | bool
+
+- include_tasks: async_product_sync.yml
+  when: 
+  - satellite_products | length > 0
+  - sync_repositories  | bool
 
 - include_role:
     name: redhat.satellite.compute_resources
+    apply:
+      tags: 
+      - compute_resources
+      - compute_profiles
+      - hostgroups
+  when: 
+  - satellite_compute_resources | length > 0
+  tags: 
+  - compute_resources
+  - compute_profiles
+  - hostgroups
+
+- include_role:
+    name: redhat.satellite.compute_profiles
+    apply:
+      tags: 
+      - compute_profiles
+      - hostgroups
+  when: 
+  - satellite_compute_profiles | length > 0
+  tags: 
+  - compute_profiles
+  - hostgroups
+
+- include_role:
+    name: redhat.satellite.content_views
+  when: 
+  - satellite_content_views | length > 0
+  - setup_content_views | bool
+
+- include_tasks: async_publish_content_view.yml
+  when: 
+  - satellite_content_views | length > 0
+  - sync_content_views | bool
+
+- include_role:
+    name: redhat.satellite.domains
+    apply:
+      tags: 
+      - domains
+      - hostgroups
+  when:
+  - satellite_domains | length > 0
+  tags:
+  - hostgroups
+  - domains
+
+- include_role:
+    name: redhat.satellite.subnets
+    apply:
+      tags: 
+      - subnets
+      - domains
+      - hostgroups
+  when:
+  - satellite_subnets | length > 0
+  tags: 
+  - domains
+  - subnets
+
+- include_tasks: 
+    file: satellite_partition_tables.yml
+    apply:
+      tags: 
+      - partition_tables
+      - hostgroups
+  when:
+  - satellite_partition_tables | length > 0
+  tags: 
+  - partition_tables
+  - hostgroups
+
+- include_tasks: 
+    file: satellite_architectures.yml
+    apply:
+      tags: 
+      - os
+      - architecture
+      - hostgroups
+  when:
+  - satellite_architectures | length > 0
+  tags: 
+  - architecture
+  - os
+  - hostgroups
+
+- include_role:
+    name: redhat.satellite.operatingsystems
+    apply:
+      tags: 
+      - os
+      - hostgroups
+  when:
+  - satellite_operatingsystems | length > 0
+  tags: 
+  - os
+  - hostgroups
+
+- include_role:
+    name: redhat.satellite.hostgroups
+    apply:
+      tags: hostgroups
+  when:
+  - satellite_hostgroups| length > 0
+  tags: hostgroups

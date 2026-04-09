@@ -11,4 +11,5 @@
     --foreman-initial-organization {{ satellite_organization }} \
     --foreman-initial-location {{ satellite_location }} \
     --foreman-initial-admin-username {{ satellite_admin_username }} \
-    --foreman-initial-admin-password {{ satellite_admin_password }}
+    --foreman-initial-admin-password {{ satellite_admin_password }} \
+    --enable-foreman-plugin-bootdisk

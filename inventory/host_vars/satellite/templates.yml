@@ -1,0 +1,3 @@
+satellite_partition_tables:
+- layout: "{{ lookup('template', 'compliance_partition_table.erb.j2') }}"
+  os_family: Redhat

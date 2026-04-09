@@ -1,0 +1,16 @@
+satellite_hostgroups:
+- name: IDM
+  organization: "{{ satellite_organization }}"
+  architecture: "x86_64"
+  locations: "{{ satellite_location }}"
+  compute_resource: "main.lab.lou"
+  compute_profiles: RHEL9
+  content_source: satellite.lab.lou
+  operatingsystem: RHEL-KS 9.7
+  lifecycle_environment: "Library"
+  content_view: rhel9-kickstart
+  deploy_on: "main.lab.lou"
+  domain: "lab.lou"
+  subnet: "192.168.11.0"
+  ptable: "Compliance STIG Virtual"
+  pxe_loader: "Grub2 UEFI HTTPS"

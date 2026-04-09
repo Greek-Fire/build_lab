@@ -3,14 +3,14 @@
   ansible.builtin.set_fact:
     _manage_users_with_sudo: >-
       {{
-        manage_users
+        _manage_users_sanitized
         | rejectattr('state', 'defined')
         | selectattr('sudo', 'defined')
         | selectattr('sudo', 'equalto', true)
         | list
         +
         (
-          manage_users
+          _manage_users_sanitized
           | selectattr('state', 'defined')
           | selectattr('state', 'equalto', 'present')
           | selectattr('sudo', 'defined')

@@ -1,3 +1,20 @@
 satellite_products: []
+satellite_compute_resources: []
+satellite_content_views: []
+satellite_subnets: []
+satellite_domains: []
+satellite_hostgroups: []
+satellite_partition_tables: []
+
+sync_products: true
+sync_content_views: true
+
 setup_repositories: true
+setup_hostgroups: true
+setup_content_views: true
+setup_products: true
 setup_manifest: true
+setup_domains: true
+setup_subnets: true
+setup_compute_resources: true
+setup_partition_tables: true

@@ -1,0 +1,16 @@
+satellite_hosts:
+  - name: "idm01.lab.lou"
+    organization: "{{ satellite_organization }}"
+    location: "{{ satellite_location }}"
+    hostgroup: "IDM"
+    compute_resource: "main.lab.lou"
+    managed: true
+    build: true
+    enabled: true
+    interfaces_attributes:
+      - primary: true
+        provision: true
+        execution: true
+        domain: "lab.lou"
+        subnet: "192.168.11.0"
+        ip: "192.168.11.21"

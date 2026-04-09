@@ -1,0 +1,15 @@
+foreman_content_view_publish_poll: 0
+foreman_content_view_publish_async: 10
+satellite_content_views:
+- name: rhel9
+  repositories:
+  - name: "Red Hat Enterprise Linux 9 for x86_64 - AppStream RPMs 9"
+    product: "Red Hat Enterprise Linux for x86_64"
+  - name: "Red Hat Enterprise Linux 9 for x86_64 - BaseOS RPMs 9"
+    product: "Red Hat Enterprise Linux for x86_64"
+- name: rhel9-kickstart
+  repositories:
+  - name: "Red Hat Enterprise Linux 9 for x86_64 - AppStream Kickstart 9.7"
+    product: "Red Hat Enterprise Linux for x86_64"
+  - name: "Red Hat Enterprise Linux 9 for x86_64 - BaseOS Kickstart 9.7"
+    product: "Red Hat Enterprise Linux for x86_64"

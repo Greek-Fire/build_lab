@@ -1,0 +1,42 @@
+- name: Sync repositories
+  redhat.satellite.repository_sync:
+    username: "{{ satellite_username }}"
+    password: "{{ satellite_password }}"
+    server_url: "{{ satellite_server_url }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    organization: "{{ satellite_organization }}"
+    product: "{{ item.name }}"
+  async: "{{ satellite_sync_async | default(3600) }}"
+  poll: 0
+  loop: "{{ satellite_products }}"
+  when: satellite_products is defined
+  register: _sync_jobs
+
+- name: Wait for repository sync jobs to complete
+  ansible.builtin.async_status:
+    jid: "{{ item.ansible_job_id }}"
+  loop: "{{ _sync_jobs.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  register: _sync_results
+  until: _sync_results.finished
+  retries: "{{ satellite_sync_retries | default(60) }}"
+  delay: "{{ satellite_sync_delay | default(30) }}"
+  ignore_errors: true
+
+- name: Report repository sync results
+  ansible.builtin.debug:
+    msg: >-
+      {{ item.item.item.name }}:
+      {% if item.finished and not item.failed %}synced successfully
+      {% elif item.failed %}FAILED - {{ item.msg | default('unknown error') }}
+      {% else %}still running
+      {% endif %}
+  loop: "{{ _sync_results.results }}"
+  loop_control:
+    label: "{{ item.item.item.name }}"
+
+- name: Fail if any repository sync jobs failed
+  ansible.builtin.fail:
+    msg: "One or more repository sync jobs failed"
+  when: _sync_results.results | selectattr('failed', 'equalto', true) | list | length > 0

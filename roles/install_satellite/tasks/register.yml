@@ -27,5 +27,7 @@
 
 - name: Install Satellite package
   ansible.builtin.dnf:
-    name: satellite
+    name: 
+    - satellite
+    - libvirt-client
     state: present

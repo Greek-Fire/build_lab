@@ -43,6 +43,7 @@ virtualization_packages:
 - libvirt
 - virt-install
 - virt-viewer
+- virt-manager
 - guestfs-tools
 - virt-top
 - cockpit
@@ -101,3 +102,28 @@ satellite_vm:
   ks_file: ks.cfg
   ks_iso: satellite-ks.iso
   rhel9_bootiso: "{{ libvirt_storage_pool_path }}/boot/rhel-9.7-x86_64-dvd.iso"
+
+network_connections:
+- name: br0
+  interface_name: br0
+  type: bridge
+  state: up
+  autoconnect: true
+  ip:
+    dhcp4: false
+    auto6: false
+    address:
+    - 192.168.11.21/24
+    gateway4: 192.168.11.1
+    dns: 192.168.11.1
+    dns_search: lab.lou
+- name: eno1
+  interface_name: eno1
+  type: ethernet
+  controller: br0
+  port_type: bridge
+  state: up
+  autoconnect: true
+  ip:
+    dhcp4: false
+    auto6: false
