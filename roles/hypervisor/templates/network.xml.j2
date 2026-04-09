@@ -1,7 +1,23 @@
 <network>
-  <name>{{ libvirt_default_network.name }}</name>
+  <name>{{ item.name }}</name>
+
+  {% if not item.private | default(false) %}
   <forward mode='nat'/>
-  <bridge name='{{ libvirt_default_network.bridge }}' stp='on' delay='0'/>
-  <ip address='{{ libvirt_default_network.gateway }}' netmask='{{ libvirt_default_network.netmask }}'>
-  </ip>
+  {% endif %}
+
+  <bridge name='{{ item.bridge }}' stp='on' delay='0'/>
+
+  <ip address='{{ item.gateway }}' netmask='{{ item.netmask }}'/>
+
+  {% if item.dns_servers is defined and item.dns_servers | length > 0 %}
+  <dns>
+    {% for dns in item.dns_servers %}
+    <forwarder addr='{{ dns }}'/>
+    {% endfor %}
+  </dns>
+  {% else %}
+  {% if item.private | default(false) %}
+  <dns enable='no'/>
+  {% endif %}
+  {% endif %}
 </network>

@@ -77,14 +77,22 @@ libvirt_storage_pool:
     state: present
 
 libvirt_default_network:
-  name: 192.168.11.0 
-  bridge: virbr0
+- name: 192.168.11.0 
+  bridge: virbr11
+  dns_servers:
+  - 192.168.1.1
   network: 192.168.11.0
   netmask: 255.255.255.0
   gateway: 192.168.11.1
-  dhcp_start: 192.168.11.2
-  dhcp_end: 192.168.11.254
-  xml_network_path: /tmp/libvirt-network.xml
+  xml_network_path: /tmp/libvirt-network-11.xml
+  xml_content: 
+- name: 192.168.111.0 
+  bridge: virbr111
+  private: true
+  network: 192.168.111.0
+  netmask: 255.255.255.0
+  gateway: 192.168.111.1
+  xml_network_path: /tmp/libvirt-network-111.xml
 
 satellite_vm:
   name: satellite
