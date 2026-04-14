@@ -9,11 +9,20 @@
         + manage_users_present
         | selectattr('ssh_keypair', 'defined')
         | list
+        + manage_users_present
+        | selectattr('ssh_known_hosts', 'defined')
+        | list
       }}
     _manage_users_with_ssh_keypair: >-
       {{
         manage_users_present
         | selectattr('ssh_keypair', 'defined')
+        | list
+      }}
+    _manage_users_with_ssh_no_password: >-
+      {{
+        manage_users_present
+        | selectattr('ssh_no_password', 'defined')
         | list
       }}
 
@@ -27,6 +36,10 @@
         | list
       }}
 
+- include_tasks: ssh_user.yml
+  loop: "{{ _manage_users_with_ssh_no_password }}"
+  when: _manage_users_with_ssh_no_password | length > 0
+
 - name: Ensure private key filename is valid when ssh_keypair is used
   ansible.builtin.assert:
     that:
@@ -35,7 +48,7 @@
   loop: "{{ _manage_users_with_ssh_keypair }}"
   loop_control:
     label: "{{ item.username }}"
-  when: item.ssh_keypair is defined
+  when: _manage_users_with_ssh_keypair.ssh_keypair is defined
 
 - name: Ensure public key filename is valid when ssh_keypair is used
   ansible.builtin.assert:
@@ -45,7 +58,7 @@
   loop: "{{ _manage_users_with_ssh_keypair }}"
   loop_control:
     label: "{{ item.username }}"
-  when: item.ssh_keypair is defined
+  when: _manage_users_with_ssh_keypair.ssh_keypair is defined
 
 - name: Ensure .ssh directory exists for users with authorized_keys
   become: true
@@ -71,6 +84,18 @@
   loop_control:
     label: "{{ item.username }}"
 
+- name: Enforce known_hosts content
+  become: true
+  ansible.builtin.file:
+    path: "{{ item.home | default('/home/' ~ item.username) }}/.ssh/known_hosts"
+    state: touch
+    owner: "{{ item.username }}"
+    group: "{{ item.primary_group | default(item.username) }}"
+    mode: '0600'
+  loop: "{{ _manage_users_with_ssh }}"
+  loop_control:
+    label: "{{ item.username }}"
+
 - name: Install private SSH key
   become: true
   ansible.builtin.copy:
@@ -87,7 +112,7 @@
   loop: "{{ _manage_users_with_ssh_keypair_private_key }}"
   loop_control:
     label: "{{ item.username }}"
-  no_log: true
+  no_log: false
 
 - name: Install public SSH key
   become: true
@@ -127,3 +152,15 @@
     label: "{{ item.username }}"
   when:
     - item.ssh_config.manage | default(true) | bool
+
+- name: Add hypervisor to foreman known_hosts
+  become: true
+  ansible.builtin.known_hosts:
+    path: "{{ (item.home | default('/home/' ~ item.username)) }}/.ssh/known_hosts"
+    name: "{{ item.host_2_scan }}"
+    key: "{{ lookup('pipe', 'ssh-keyscan -H ' + item.host_2_scan) }}"
+  when: item.host_2_scan is defined
+  loop: "{{ _manage_users_with_ssh }}"
+  loop_control:
+    label: "{{ item.username }}"
+  no_log: false

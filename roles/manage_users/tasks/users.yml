@@ -14,29 +14,30 @@
           | list
         )
       }}
+- block:
+  - name: Ensure managed users are present
+    become: true
+    ansible.builtin.user:
+      name: "{{ item.username }}"
+      uid: "{{ item.uid | default(omit) }}"
+      comment: "{{ item.comment | default(omit) }}"
+      shell: "{{ item.shell | default(omit) }}"
+      home: "{{ item.home | default(omit) }}"
+      create_home: "{{ item.create_home | default(true) }}"
+      group: "{{ item.primary_group | default(omit) }}"
+      groups: "{{ item.groups | join(',') if item.groups is defined else omit }}"
+      append: "{{ item.append | default(false) if item.groups is defined else omit }}"
+      system: "{{ item.system | default(omit) }}"
+      expires: "{{ item.expires | default(omit) }}"
+      password_expire_max: "{{ item.password_expire_max | default(omit) }}"
+      password_expire_min: "{{ item.password_expire_min | default(omit) }}"
+      password_expire_warn: "{{ item.password_expire_warn | default(omit) }}"
+      state: present
+    loop: "{{ manage_users_present }}"
+    loop_control:
+      label: "{{ item.username }}"
 
-- name: Ensure managed users are present
-  become: true
-  ansible.builtin.user:
-    name: "{{ item.username }}"
-    uid: "{{ item.uid | default(omit) }}"
-    comment: "{{ item.comment | default(omit) }}"
-    shell: "{{ item.shell | default(omit) }}"
-    home: "{{ item.home | default(omit) }}"
-    create_home: "{{ item.create_home | default(true) }}"
-    group: "{{ item.primary_group | default(omit) }}"
-    groups: "{{ item.groups | join(',') if item.groups is defined else omit }}"
-    append: "{{ item.append | default(false) if item.groups is defined else omit }}"
-    system: "{{ item.system | default(omit) }}"
-    expires: "{{ item.expires | default(omit) }}"
-    password_expire_max: "{{ item.password_expire_max | default(omit) }}"
-    password_expire_min: "{{ item.password_expire_min | default(omit) }}"
-    password_expire_warn: "{{ item.password_expire_warn | default(omit) }}"
-    state: present
-  loop: "{{ manage_users_present }}"
-  loop_control:
-    label: "{{ item.username }}"
-
-- include_tasks: password.yml
-- include_tasks: ssh_keys.yml
-- include_tasks: sudoers.yml
+  - include_tasks: password.yml
+  - include_tasks: ssh_keys.yml
+  - include_tasks: sudoers.yml
+  when: manage_users_present | length > 0

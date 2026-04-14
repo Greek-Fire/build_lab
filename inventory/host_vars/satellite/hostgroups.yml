@@ -11,6 +11,6 @@ satellite_hostgroups:
   content_view: rhel9-kickstart
   deploy_on: "main.lab.lou"
   domain: "lab.lou"
-  subnet: "192.168.11.0"
+  subnet: "192.168.111.0"
   ptable: "Compliance STIG Virtual"
   pxe_loader: "Grub2 UEFI HTTPS"

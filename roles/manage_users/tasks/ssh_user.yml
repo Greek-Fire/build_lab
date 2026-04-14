@@ -1,0 +1,19 @@
+- name: Ensure sshd drop-in directory exists
+  become: true
+  ansible.builtin.file:
+    path: /etc/ssh/sshd_config.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0750'
+
+- name: Enforce key-only SSH auth for foreman via template
+  become: true
+  ansible.builtin.template:
+    src: foreman-key-only.conf.j2
+    dest: "/etc/ssh/sshd_config.d/10-{{ item.username }}.conf"
+    owner: root
+    group: root
+    mode: '0600'
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Reload sshd

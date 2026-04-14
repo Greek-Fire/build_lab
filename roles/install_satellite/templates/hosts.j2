@@ -1,3 +1,7 @@
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-{{ network_connections[0].ip.address[0].split('/')[0]  }} {{ ansible_fqdn }} {{ ansible_hostname }}
+{% for conn in network_connections if conn.ip is defined and conn.ip.address is defined %}
+{% for addr in conn.ip.address %}
+{{ addr.split('/')[0] }} {{ ansible_fqdn }} {{ ansible_hostname }}
+{% endfor %}
+{% endfor %}

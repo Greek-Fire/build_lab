@@ -4,14 +4,39 @@
 
 - include_role:
     name: redhat.satellite.repositories
+    apply:
+      tags: 
+      - products
+      - hostgroups
   when: 
   - satellite_products | length > 0
-  - setup_products     | bool
+  tags:
+  - products
+  - hostgroups
 
-- include_tasks: async_product_sync.yml
+- include_tasks: 
+    file: installation_medium.yml
+    apply:
+      tags: 
+      - installation_medium
+      - hostgroups
+  when: 
+  - installation_media | length > 0
+  tags:
+  - hostgroups
+  - installation_medium  
+
+- include_tasks: 
+    file: async_product_sync.yml
+    apply:
+      tags: 
+      - sync_repositories
+      - hostgroups
   when: 
   - satellite_products | length > 0
-  - sync_repositories  | bool
+  tags:
+  - hostgroups
+  - sync_repositories  
 
 - include_role:
     name: redhat.satellite.compute_resources
@@ -41,14 +66,24 @@
 
 - include_role:
     name: redhat.satellite.content_views
+    apply:
+      tags: 
+      - content_views
+      - hostgroups
   when: 
   - satellite_content_views | length > 0
-  - setup_content_views | bool
+  tags:
+  - content_views
+  - hostgroups
 
-- include_tasks: async_publish_content_view.yml
+- include_tasks: 
+    file: async_publish_content_view.yml
+    apply:
+      tags:
+      - sync_content_views
+      - hostgroups
   when: 
   - satellite_content_views | length > 0
-  - sync_content_views | bool
 
 - include_role:
     name: redhat.satellite.domains
@@ -87,6 +122,18 @@
   - partition_tables
   - hostgroups
 
+- include_role:
+    name: redhat.satellite.operatingsystems
+    apply:
+      tags: 
+      - os
+      - hostgroups
+  when:
+  - satellite_operatingsystems | length > 0
+  tags: 
+  - os
+  - hostgroups
+
 - include_tasks: 
     file: satellite_architectures.yml
     apply:
@@ -98,18 +145,6 @@
   - satellite_architectures | length > 0
   tags: 
   - architecture
-  - os
-  - hostgroups
-
-- include_role:
-    name: redhat.satellite.operatingsystems
-    apply:
-      tags: 
-      - os
-      - hostgroups
-  when:
-  - satellite_operatingsystems | length > 0
-  tags: 
   - os
   - hostgroups
 

@@ -65,5 +65,16 @@
   loop_control:
     label: "{{ item.username }}"
 
+- name: Ensure sshd includes drop-in directory
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^[#[:space:]]*Include[[:space:]]+/etc/ssh/sshd_config\.d/\*\.conf$'
+    line: 'Include /etc/ssh/sshd_config.d/*.conf'
+    insertafter: BOF
+    state: present
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Reload sshd
+
 - include_tasks: cleanup.yml
 - include_tasks: users.yml

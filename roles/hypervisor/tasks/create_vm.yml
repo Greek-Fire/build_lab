@@ -17,7 +17,8 @@
       --memory {{ satellite_vm.memory_mb }}
       --vcpus {{ satellite_vm.vcpus }}
       --disk path=/var/lib/libvirt/images/{{ satellite_vm.name }}.qcow2,size={{ satellite_vm.disk_gb }},format=qcow2
-      --network network={{ satellite_vm.network }}
+      --network network={{ satellite_vm.internet }}
+      --network network={{ satellite_vm.intranet }}
       --cdrom {{ satellite_vm.iso_dir }}/{{ satellite_vm.ks_iso }}
       --location {{ satellite_vm.iso_dir }}/{{ satellite_vm.ks_iso }}
       --extra-args "inst.ks=cdrom:/ks.cfg inst.text"

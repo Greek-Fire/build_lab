@@ -3,33 +3,28 @@ rhsm_enable_repos:
   state: enabled
 - name: rhel-9-for-x86_64-appstream-rpms
   state: enabled
-- name: satellite-6.16-for-rhel-9-x86_64-rpms
+- name: satellite-6.17-for-rhel-9-x86_64-rpms
   state: enabled
-- name: satellite-maintenance-6.16-for-rhel-9-x86_64-rpms
+- name: satellite-maintenance-6.17-for-rhel-9-x86_64-rpms
   state: enabled
 
-network_connections:
-- name: enp1s0
-  interface_name: enp1s0
-  type: ethernet
-  state: up
-  autoconnect: true
-  ip:
-    dhcp4: false
-    auto6: false
-    address:
-    - 192.168.11.11/24
-    gateway4: 192.168.11.1
-    dns: 192.168.11.1
-    dns_search: lab.lou
+installation_media:
+- name: "RHEL 9 BaseOS"
+  path: "http://192.168.111.11/pulp/content/hallas/Library/rhel9-kickstart/content/dist/rhel9/9.7/x86_64/baseos/kickstart/"
+  state: present
+  operatingsystems:
+  - Redhat
 
-firewall:
-- service: http
-  state: enabled
-- service: https
-  state: enabled
-- service: puppetmaster
-  state: enabled
+global_parameters:
+- name: root_pass
+  value: red22hat
+  hidden_value: true
+- name: foreman_url
+  value: https://192.168.111.11
+  hidden_value: no
+- name: unattended_url
+  value: https://192.168.111.11
+  hidden_value: no
 
 safe_mode: false
 storage_pools:

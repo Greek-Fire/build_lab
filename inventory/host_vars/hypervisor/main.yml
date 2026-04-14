@@ -77,7 +77,14 @@ libvirt_storage_pool:
     state: present
 
 libvirt_default_network:
+- name: 192.168.111.0 
+  bridge: virbr111
+  network: 192.168.111.0
+  netmask: 255.255.255.0
+  gateway: 192.168.111.1
+  xml_network_path: /tmp/libvirt-network-111.xml
 - name: 192.168.11.0 
+  nat: true
   bridge: virbr11
   dns_servers:
   - 192.168.1.1
@@ -86,13 +93,6 @@ libvirt_default_network:
   gateway: 192.168.11.1
   xml_network_path: /tmp/libvirt-network-11.xml
   xml_content: 
-- name: 192.168.111.0 
-  bridge: virbr111
-  private: true
-  network: 192.168.111.0
-  netmask: 255.255.255.0
-  gateway: 192.168.111.1
-  xml_network_path: /tmp/libvirt-network-111.xml
 
 satellite_vm:
   name: satellite
@@ -104,7 +104,8 @@ satellite_vm:
   memory_mb: 20480
   vcpus: 4
   disk_gb: 300
-  network: 192.168.11.0
+  internet: 192.168.11.0
+  intranet: 192.168.111.0
   ks_dir: "{{ libvirt_storage_pool_path }}/kickstarts"
   iso_dir: "{{ libvirt_storage_pool_path }}/boot"
   ks_file: ks.cfg
@@ -112,26 +113,16 @@ satellite_vm:
   rhel9_bootiso: "{{ libvirt_storage_pool_path }}/boot/rhel-9.7-x86_64-dvd.iso"
 
 network_connections:
-- name: br0
-  interface_name: br0
-  type: bridge
+- name: eno1
+  interface_name: eno1
+  type: ethernet
   state: up
   autoconnect: true
   ip:
     dhcp4: false
     auto6: false
     address:
-    - 192.168.11.21/24
-    gateway4: 192.168.11.1
-    dns: 192.168.11.1
+    - 192.168.1.21/24
+    gateway4: 192.168.1.1
+    dns: 192.168.1.1
     dns_search: lab.lou
-- name: eno1
-  interface_name: eno1
-  type: ethernet
-  controller: br0
-  port_type: bridge
-  state: up
-  autoconnect: true
-  ip:
-    dhcp4: false
-    auto6: false

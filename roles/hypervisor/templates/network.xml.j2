@@ -1,13 +1,15 @@
 <network>
   <name>{{ item.name }}</name>
 
-  {% if not item.private | default(false) %}
-  <forward mode='nat'/>
+  {% if item.nat | default(false) %}
+  <forward mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
   {% endif %}
 
   <bridge name='{{ item.bridge }}' stp='on' delay='0'/>
-
-  <ip address='{{ item.gateway }}' netmask='{{ item.netmask }}'/>
 
   {% if item.dns_servers is defined and item.dns_servers | length > 0 %}
   <dns>
@@ -15,9 +17,15 @@
     <forwarder addr='{{ dns }}'/>
     {% endfor %}
   </dns>
-  {% else %}
-  {% if item.private | default(false) %}
+  {% elif item.disable_dns | default(false) %}
   <dns enable='no'/>
   {% endif %}
-  {% endif %}
+
+  <ip address='{{ item.gateway }}' netmask='{{ item.netmask }}'>
+    {% if item.dhcp is defined and item.dhcp.enabled | default(false) %}
+    <dhcp>
+      <range start='{{ item.dhcp.start }}' end='{{ item.dhcp.end }}'/>
+    </dhcp>
+    {% endif %}
+  </ip>
 </network>

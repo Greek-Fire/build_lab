@@ -1,15 +1,50 @@
 - name: Setup /etc/host
+  become: true
   template:
     dest: /etc/hosts
     src: hosts.j2
     owner: root
     group: root
 
+
+- name: Get current /tmp mount entry
+  ansible.builtin.set_fact:
+    tmp_mount: >-
+      {{
+        ansible_mounts
+        | selectattr('mount', 'equalto', '/tmp')
+        | list
+        | first
+      }}
+
+- name: Fail if /tmp is not a separate mount
+  ansible.builtin.fail:
+    msg: "/tmp is not a separate filesystem on this host"
+  when: tmp_mount is not defined or tmp_mount == ""
+
+- name: Ensure /tmp mount options are correct
+  ansible.builtin.mount:
+    path: /tmp
+    src: "{{ tmp_mount.device }}"
+    fstype: "{{ tmp_mount.fstype }}"
+    opts: defaults,nodev,nosuid
+    state: mounted
+
 - name: Configure Satellite Server
+  become: true
   ansible.builtin.command: >
     satellite-installer --scenario satellite \
     --foreman-initial-organization {{ satellite_organization }} \
     --foreman-initial-location {{ satellite_location }} \
     --foreman-initial-admin-username {{ satellite_admin_username }} \
     --foreman-initial-admin-password {{ satellite_admin_password }} \
-    --enable-foreman-plugin-bootdisk
+    --foreman-proxy-tftp true \
+    --foreman-proxy-tftp-managed true \
+    --foreman-proxy-tftp-servername 192.168.111.11 \
+    --foreman-proxy-dhcp true \
+    --foreman-proxy-httpboot true \
+    --foreman-proxy-dhcp-managed true \
+    --foreman-proxy-dhcp-interface enp2s0 \
+    --foreman-proxy-dhcp-range "192.168.111.100 192.168.111.200" \
+    --foreman-proxy-dhcp-gateway 192.168.111.1 \
+    --foreman-proxy-dhcp-nameservers 192.168.111.1

@@ -1,9 +1,3 @@
-- name: Check subscription status
-  ansible.builtin.command: subscription-manager status
-  register: rhsm_status
-  changed_when: false
-  failed_when: false
-
 - name: Register to the Red Hat Customer Portal by using proxy
   ansible.builtin.include_role:
       name: redhat.rhel_system_roles.rhc
@@ -16,18 +10,20 @@
         username: "{{ rhsm_username }}"
         password: "{{ rhsm_password }}"
   when:
-  - rhsm_status.rc != 0
   - rhsm_username is defined
   - rhsm_password is defined
 
 - name: Update all installed packages
+  become: true
   ansible.builtin.dnf:
     name: '*'
     state: latest
 
 - name: Install Satellite package
+  become: true
   ansible.builtin.dnf:
     name: 
     - satellite
     - libvirt-client
+    - puppet-agent
     state: present

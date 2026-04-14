@@ -11,8 +11,9 @@ satellite_operatingsystems:
   provisioning_templates:
   - "Kickstart default"
   - "Kickstart default finish"
-  - "Kickstart oVirt-RHVH PXELinux"
   - "Kickstart default PXEGrub2"
+  media:
+  - "RHEL 9 BaseOS"
   ptables:
   - Compliance STIG Virtual
   default_templates:
@@ -20,7 +21,5 @@ satellite_operatingsystems:
     provisioning_template: "Kickstart default finish"
   - template_kind: "provision"
     provisioning_template: "Kickstart default"
-  - template_kind: PXELinux
-    provisioning_template: "Kickstart oVirt-RHVH PXELinux"
   - template_kind: PXEGrub2
     provisioning_template: Kickstart default PXEGrub2
