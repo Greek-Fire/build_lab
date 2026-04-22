@@ -4,7 +4,7 @@ lang en_US.UTF-8
 keyboard us
 timezone America/Chicago --utc
 
-network --bootproto=static --ip={{ satellite_vm.ip }} --netmask={{ satellite_vm.netmask }} --gateway={{ satellite_vm.gateway }} --nameserver={{ satellite_vm.nameserver }} --hostname={{ satellite_vm.fqdn }} --activate
+network --bootproto=static --ip={{ item.ip }} --netmask={{ item.netmask }} {{ '--gateway=' ~ item.gateway if item.gateway is defined and item.gateway else '' }} --nameserver={{ item.nameserver }} --hostname={{ item.fqdn }} --activate
 
 rootpw --iscrypted {{ root_hash }}
 
@@ -50,6 +50,11 @@ wget
 curl
 bash-completion
 chrony
--iwl*firmware*
 -plymouth
+-iwl*firmware
+{% if ipa_server is defined %}
+ipa-server
+ipa-server-dns
+bind-dyndb-ldap
+{% endif %}
 %end

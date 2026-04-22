@@ -5,6 +5,7 @@ satellite_subnets: []
 satellite_domains: []
 satellite_hostgroups: []
 satellite_partition_tables: []
+installation_media: []
 
 sync_products: true
 sync_content_views: true

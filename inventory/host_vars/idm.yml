@@ -1,0 +1,44 @@
+ipaadmin_password: "{{ idmadmin_password }}"
+ipadm_password: "{{ idmdm_password }}"
+ipaserver_domain: lab.lou
+ipaserver_realm: LAB.LOU
+ipaserver_setup_dns: true
+ipaserver_auto_forwarders: true
+ipaserver_forwarders:
+- 192.168.1.1
+ipaserver_install_packages: true
+state: present
+
+rhsm_enable_repos: 
+- name: rhel-9-for-x86_64-baseos-rpms
+  state: enabled
+- name: rhel-9-for-x86_64-appstream-rpms
+  state: enabled
+rhc_insights:
+  state: absent
+rhc_auth:
+  login:
+    username: "{{ rhsm_username }}"
+    password: "{{ rhsm_password }}"
+
+network_connections:
+- name: enp1s0
+  interface_name: enp1s0
+  type: ethernet
+  state: up
+  autoconnect: true
+  ip:
+    dhcp4: false
+    auto6: false
+    address:
+    - 192.168.11.21/24
+    gateway4: 192.168.11.1
+    dns: 192.168.11.1
+
+timesync_ntp_provider: chrony
+timesync_ntp_servers:
+  - hostname: 192.168.11.21
+    iburst: true
+timesync_chrony_allow:
+  - 192.168.11.0/24
+timesync_chrony_local_stratum: 10

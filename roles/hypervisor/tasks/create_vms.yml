@@ -1,0 +1,40 @@
+- name: Ensure Kickstart directory exists
+  ansible.builtin.file:
+    path: "{{ item.ks_dir }}"
+    state: directory
+    owner: qemu
+    group: root
+    mode: "0755"
+
+- name: Ensure ISO directory exists
+  ansible.builtin.file:
+    path: "{{ item.iso_dir }}"
+    state: directory
+    owner: qemu
+    group: root
+    mode: "0755"
+
+- name: Render Kickstart file
+  ansible.builtin.template:
+    src: satellite.ks.j2
+    dest: "{{ item.ks_dir }}/{{ item.ks_file }}"
+    owner: qemu
+    group: root
+    mode: "0644"
+
+- name: Validate Kickstart syntax
+  ansible.builtin.command:
+    cmd: "ksvalidator -v RHEL9 {{ item.ks_dir }}/{{ item.ks_file }}"
+  changed_when: false
+
+- name: Build Satellite custom ISO
+  ansible.builtin.command:
+    cmd: >-
+      mkksiso
+      {{ item.ks_dir }}/{{ item.ks_file }}
+      {{ item.rhel9_bootiso }}
+      {{ item.iso_dir }}/{{ item.ks_iso }}
+  args:
+    creates: "{{ item.iso_dir }}/{{ item.ks_iso }}"
+
+- include_tasks: _create_vm.yml

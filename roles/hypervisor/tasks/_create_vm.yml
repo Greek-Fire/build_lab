@@ -1,0 +1,36 @@
+- block:
+  - name: Stop VM if running
+    ansible.builtin.command: "virsh destroy {{ item.name }}"
+    failed_when: false
+    changed_when: false
+
+  - name: Delete VM
+    ansible.builtin.command: "virsh undefine {{ item.name }} --nvram --remove-all-storage"
+  when: 
+  - (clean | default(false) | bool) or (clean_vm | default(false) | bool)
+
+- name: Create Satellite VM
+  ansible.builtin.command:
+    cmd: >-
+      virt-install
+      --name {{ item.name }}
+      --memory {{ item.memory_mb }}
+      --vcpus {{ item.vcpus }}
+      --disk path=/var/lib/libvirt/images/{{ item.name }}.qcow2,size={{ item.disk_gb }},format=qcow2
+      {{ network_args }}
+      --cdrom {{ item.iso_dir }}/{{ item.ks_iso }}
+      --location {{ item.iso_dir }}/{{ item.ks_iso }}
+      --extra-args "inst.ks=cdrom:/ks.cfg inst.text"
+      --boot uefi
+  async: 600
+  poll: 0
+  vars:
+    network_args: >-
+      {% if item.internet is defined %}
+      --network network={{ item.internet }}
+      {% endif %}
+      {% if item.intranet is defined %}
+      --network network={{ item.intranet }}
+      {% endif %}
+  args:
+    creates: "/etc/libvirt/qemu/{{ item.name }}.xml"

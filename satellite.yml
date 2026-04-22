@@ -1,10 +1,23 @@
 ---
+#- hosts: ipaclients
+#  become: true
+#  vars_files:
+#  - ~/.vault/satellite_facts.yml
+#  roles:
+#  - redhat.rhel_system_roles.rhc
+#  - redhat.rhel_system_roles.network
+#  - redhat.rhel_system_roles.storage
+#  - redhat.rhel_idm.ipaclient
+#  - redhat.rhel_system_roles.timesync
+#  - redhat.rhel_system_roles.firewall
+
 - hosts: satellite
   become: true
   vars_files:
   - ~/.vault/satellite_facts.yml
   gather_facts: 1
   roles:
-  - role: install_satellite
-  - role: manage_users
-  - role: configure_satellite
+  - create_idm_cert
+  - install_satellite
+  - manage_users
+  - configure_satellite

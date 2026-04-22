@@ -4,8 +4,11 @@ satellite_compute_resources:
     provider_params:
       url: qemu+ssh://foreman@192.168.11.1/system
       display_type: vnc
+      set_console_password: false
 
 satellite_compute_profiles:
+- name: 1-Small
+  state: absent
 - name: 2-Medium
   state: absent
 - name: 3-Large
@@ -16,14 +19,18 @@ satellite_compute_profiles:
     vm_attrs:
       cpus: 2
       memory: 8489271296
+      start: true
+      boot_order:
+      - hd
+      - network
       nics_attributes:
         0:
           type: network
-          network: 192.168.111.0
+          network: 192.168.11.0
           model: virtio
       volumes_attributes:
         0:
           pool_name: default
-          capacity: 100
-          allocation: 0
+          capacity: 50
+          allocation: '0'
           format_type: qcow2

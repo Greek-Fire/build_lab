@@ -1,0 +1,146 @@
+Louis Tiches
+Linux Systems Engineer
+Memphis, TN (Open to Remote / Relocation)
+301-667-0424
+ltiches@hallastech.com
+
+---
+
+PROFESSIONAL SUMMARY
+
+Linux Systems Engineer specializing in bare-metal provisioning, large-scale automation, and system-level troubleshooting across RHEL and Oracle Linux environments. Proven experience designing reproducible infrastructure and enforcing compliance-driven system baselines using Ansible, Satellite, and OpenSCAP.
+
+Strong focus on performance, reliability, and automation at scale, with hands-on experience building provisioning pipelines, developing Python-based tooling, and improving operational visibility across enterprise Linux environments.
+
+---
+
+CERTIFICATIONS
+
+* Red Hat Certified Engineer (RHCE)
+* Red Hat Certified System Administrator (RHCSA)
+* Red Hat Advanced Ansible (Ansible Tower / AAP)
+* Red Hat System Management (Satellite / Foreman)
+
+---
+
+CORE SKILLS
+
+Linux Engineering
+
+* RHEL 8/9, Oracle Linux 8/9 (UEK)
+* systemd internals, kernel tuning, UEFI boot process
+* Bare-metal provisioning (PXE/iPXE, Kickstart)
+
+Automation & Configuration Management
+
+* Ansible (advanced playbooks, dynamic roles, tagging strategies)
+* Red Hat Satellite / Foreman
+* Infrastructure-as-Code practices and Git-based workflows
+
+Programming & Scripting
+
+* Python (CLI tooling, XML/ARF parsing, data transformation, automation pipelines, API interaction)
+* Ruby on Rails (Satellite plugin development)
+* Bash scripting
+
+Systems & Performance Troubleshooting
+
+* strace, tcpdump, lsof, ss, journald
+* System-level debugging (CPU, memory, IO, network)
+* Network diagnostics (TCP/UDP, routing, DNS)
+
+Compliance & Security
+
+* OpenSCAP, SCAP, ARF parsing
+* DISA STIG implementation and reporting
+* ComplianceAsCode (SCAP Security Guide)
+
+Infrastructure & Virtualization
+
+* KVM/libvirt, VMware vSphere/vCenter
+* Dell iDRAC (Redfish automation)
+
+Storage & Networking
+
+* LVM, multipath, SAN (Dell EMC ME5)
+* WWN-based disk provisioning
+
+Containers & Platforms
+
+* Podman (rootless containers)
+* Kubernetes (working familiarity)
+
+---
+
+SYSTEMS ENGINEERING HIGHLIGHTS
+
+* Designed automation-first infrastructure workflows for repeatable system provisioning and compliance enforcement
+* Emphasized idempotent configuration management to eliminate configuration drift across Linux systems
+* Focused on building reliable, scalable Linux environments through automation and standardization
+
+---
+
+PROFESSIONAL EXPERIENCE
+
+Linux Systems Engineer
+March 2016 – Present
+
+* Engineered automated bare-metal provisioning pipelines using Kickstart, PXE/iPXE, and Red Hat Satellite, enabling consistent deployment of RHEL and Oracle Linux systems
+* Managed lifecycle and configuration of Linux infrastructure across multi-system environments, emphasizing repeatability, reliability, and automation-first operations
+* Supported and automated management of dozens to one hundred thousand Linux systems, ensuring consistent configuration and compliance enforcement
+* Developed Python CLI tooling to parse OpenSCAP ARF XML results into structured JSON/CSV outputs for compliance reporting pipelines
+* Automated DISA STIG compliance enforcement using Ansible and ComplianceAsCode, reducing manual remediation and improving audit readiness
+* Designed and maintained modular Ansible roles with dynamic OS targeting and granular execution control via tagging strategies
+* Troubleshot complex system and network issues using strace, tcpdump, journald, and system-level diagnostics
+* Analyzed system performance across CPU, memory, IO, and network layers to identify and resolve bottlenecks
+* Designed and implemented LVM and multipath storage configurations using WWN-based disk selection for SAN-backed systems
+* Integrated Dell iDRAC Redfish APIs for automated provisioning and lifecycle management of physical servers
+* Contributed to Git-based workflows, code reviews, and CI/CD pipelines for infrastructure automation
+* Integrated compliance and system data into structured reporting pipelines to improve operational visibility
+
+---
+
+Network Integration Manager
+AT&T — June 2016 – June 2017
+
+* Automated network operations using Ansible, reducing manual configuration effort
+* Managed and supported Juniper, Cisco, and Arista network infrastructure
+* Contributed to design and implementation of a VDI environment, supporting scalable user access
+* Troubleshot network performance and connectivity issues across enterprise environments
+
+---
+
+Global Network Systems Intern
+Stanley Black & Decker — June 2015 – June 2016
+
+* Installed and configured Cisco Meraki and Cisco IOS-based switches and routers
+* Supported LAN/WAN troubleshooting efforts in collaboration with senior engineers
+* Traveled to multiple sites to replace end-of-life network hardware and ensure continuity
+* Diagnosed and resolved connectivity issues across enterprise networking equipment
+
+---
+
+Military Police Soldier
+United States Army Reserve — March 2009 – March 2015
+
+* Led and mentored teams of military police personnel in high-tempo operational environments
+* Directed movement and coordination of 12+ personnel to support mission-critical operations
+* Trained peers and senior personnel on new procedures and evolving mission requirements
+* Partnered with Afghan National Police in Kandahar, Afghanistan to deliver training and operational support
+* Maintained accountability and security of sensitive and mission-critical equipment
+* Recognized for performance, placing 2nd in Brigade-level Army Best Warrior Competition
+* Demonstrated leadership, discipline, and decision-making in high-pressure environments
+
+---
+
+EDUCATION
+
+Computer Information Systems
+
+---
+
+ADDITIONAL DETAILS
+
+* Experience in compliance-driven, security-focused environments
+* Strong emphasis on automation, system consistency, and operational scalability
+* Passion for solving complex Linux systems problems and improving infrastructure reliability

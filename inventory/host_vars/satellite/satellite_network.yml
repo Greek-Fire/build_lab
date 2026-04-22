@@ -1,13 +1,16 @@
 satellite_domains:
 - name: lab.lou
 satellite_subnets:
-- name: 192.168.111.0
+- name: 192.168.11.0
   description: My Lab
-  network: "192.168.111.0"
+  network: "192.168.11.0"
   mask: "255.255.255.0"
-  gateway: "192.168.111.1"
+  gateway: "192.168.11.1"
+  dns_primary: 192.168.11.21
+  network_type: IPv4
   ipam: DHCP
   boot_mode: DHCP
+  httpboot_proxy: satellite.lab.lou
   dhcp_proxy: satellite.lab.lou
   tftp_proxy: satellite.lab.lou
   domains:
@@ -29,22 +32,16 @@ network_connections:
     address:
     - 192.168.11.11/24
     gateway4: 192.168.11.1
-    dns: 192.168.11.1
-    dns_search: lab.lou
-- name: enp2s0
-  interface_name: enp2s0
-  type: ethernet
-  state: up
-  autoconnect: true
-  ip:
-    dhcp4: false
-    auto6: false
-    address:
-    - 192.168.111.11/24
-    dns_search: lab.lou
+    dns: 192.168.11.21
 
 firewall:
 - service: http
+  state: enabled
+- service: dns
+  state: enabled
+- name: dhcp
+  state: enabled
+- name: tftp
   state: enabled
 - service: https
   state: enabled

@@ -94,8 +94,8 @@ libvirt_default_network:
   xml_network_path: /tmp/libvirt-network-11.xml
   xml_content: 
 
-satellite_vm:
-  name: satellite
+vms:
+- name: satellite
   fqdn: satellite.lab.lou
   ip: 192.168.11.11
   netmask: 255.255.255.0
@@ -105,7 +105,6 @@ satellite_vm:
   vcpus: 4
   disk_gb: 300
   internet: 192.168.11.0
-  intranet: 192.168.111.0
   ks_dir: "{{ libvirt_storage_pool_path }}/kickstarts"
   iso_dir: "{{ libvirt_storage_pool_path }}/boot"
   ks_file: ks.cfg

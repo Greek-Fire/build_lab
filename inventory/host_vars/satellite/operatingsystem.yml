@@ -12,8 +12,6 @@ satellite_operatingsystems:
   - "Kickstart default"
   - "Kickstart default finish"
   - "Kickstart default PXEGrub2"
-  media:
-  - "RHEL 9 BaseOS"
   ptables:
   - Compliance STIG Virtual
   default_templates:

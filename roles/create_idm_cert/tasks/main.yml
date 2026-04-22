@@ -1,0 +1,37 @@
+- name: Check certmonger requests
+  ansible.builtin.command: ipa-getcert list
+  register: certmonger_list
+  changed_when: false
+
+- name: Stop stale tracked request for this cert path
+  ansible.builtin.command: >
+    ipa-getcert stop-tracking
+    -f /etc/pki/tls/{{ ansible_fqdn }}.crt
+  vars:
+    _cert_path: "/etc/pki/tls/{{ ansible_fqdn }}.crt"
+  when: _cert_path in certmonger_list.stdout
+  changed_when: true
+  failed_when: false
+
+- name: Remove any stale key or cert files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "/etc/pki/tls/{{ ansible_fqdn }}.key"
+    - "/etc/pki/tls/{{ ansible_fqdn }}.crt"
+
+- name: Request Satellite cert via certmonger
+  ansible.builtin.command: >
+    ipa-getcert request
+    -r
+    -k /etc/pki/tls/{{ ansible_fqdn }}.key
+    -f /etc/pki/tls/{{ ansible_fqdn }}.crt
+    -N CN={{ ansible_fqdn }}
+    -K HTTP/{{ ansible_fqdn }}
+    -D {{ ansible_fqdn }}
+
+- name: Wait for cert file to appear
+  ansible.builtin.wait_for:
+    path: "/etc/pki/tls/{{ ansible_fqdn }}.crt"
+    timeout: 60

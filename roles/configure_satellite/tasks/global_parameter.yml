@@ -1,5 +1,5 @@
 - name: "Add Global Parameters"
-  redhat.satellite.global_parameters:
+  redhat.satellite.global_parameter:
     username: "{{ satellite_username | default(omit) }}"
     password: "{{ satellite_password | default(omit) }}"
     server_url: "{{ satellite_server_url | default(omit) }}"

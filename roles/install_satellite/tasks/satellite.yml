@@ -6,7 +6,6 @@
     owner: root
     group: root
 
-
 - name: Get current /tmp mount entry
   ansible.builtin.set_fact:
     tmp_mount: >-
@@ -30,6 +29,21 @@
     opts: defaults,nodev,nosuid
     state: mounted
 
+- name: Update all installed packages
+  become: true
+  ansible.builtin.dnf:
+    name: '*'
+    state: latest
+
+- name: Install Satellite package
+  become: true
+  ansible.builtin.dnf:
+    name: 
+    - satellite
+    - libvirt-client
+    - puppet-agent
+    state: present
+
 - name: Configure Satellite Server
   become: true
   ansible.builtin.command: >
@@ -37,14 +51,19 @@
     --foreman-initial-organization {{ satellite_organization }} \
     --foreman-initial-location {{ satellite_location }} \
     --foreman-initial-admin-username {{ satellite_admin_username }} \
-    --foreman-initial-admin-password {{ satellite_admin_password }} \
+    --foreman-initial-admin-password {{ satellite_admin_password }} \  
     --foreman-proxy-tftp true \
     --foreman-proxy-tftp-managed true \
-    --foreman-proxy-tftp-servername 192.168.111.11 \
+    --foreman-proxy-tftp-servername 192.168.11.11 \
     --foreman-proxy-dhcp true \
-    --foreman-proxy-httpboot true \
     --foreman-proxy-dhcp-managed true \
-    --foreman-proxy-dhcp-interface enp2s0 \
-    --foreman-proxy-dhcp-range "192.168.111.100 192.168.111.200" \
-    --foreman-proxy-dhcp-gateway 192.168.111.1 \
-    --foreman-proxy-dhcp-nameservers 192.168.111.1
+    --foreman-proxy-dhcp-interface enp1s0 \
+    --foreman-proxy-dhcp-range "192.168.11.100 192.168.11.200" \
+    --foreman-proxy-dhcp-gateway 192.168.11.1 \
+    --foreman-proxy-dhcp-nameservers 192.168.11.1 \
+    --foreman-proxy-dhcp-option-domain lab.lou \
+    --certs-server-cert /etc/pki/tls/{{ ansible_fqdn }}.crt \
+    --certs-server-key /etc/pki/tls/{{ ansible_fqdn }}.key \
+    --certs-server-ca-cert /etc/ipa/ca.crt \
+    --certs-update-server \
+    --certs-update-server-ca

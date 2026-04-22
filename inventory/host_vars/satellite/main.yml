@@ -1,3 +1,4 @@
+ipaadmin_password: "{{ idmadmin_password }}"
 rhsm_enable_repos: 
 - name: rhel-9-for-x86_64-baseos-rpms
   state: enabled
@@ -8,23 +9,32 @@ rhsm_enable_repos:
 - name: satellite-maintenance-6.17-for-rhel-9-x86_64-rpms
   state: enabled
 
-installation_media:
-- name: "RHEL 9 BaseOS"
-  path: "http://192.168.111.11/pulp/content/hallas/Library/rhel9-kickstart/content/dist/rhel9/9.7/x86_64/baseos/kickstart/"
-  state: present
-  operatingsystems:
-  - Redhat
+rhc_repositories: "{{ rhsm_enable_repos | default([]) }}"
+rhc_insights:
+  state: absent
+rhc_auth:
+  login:
+    username: "{{ rhsm_username }}"
+    password: "{{ rhsm_password }}"
 
-global_parameters:
-- name: root_pass
-  value: red22hat
-  hidden_value: true
+settings:
 - name: foreman_url
-  value: https://192.168.111.11
+  value: https://satellite.lab.lou
   hidden_value: no
 - name: unattended_url
-  value: https://192.168.111.11
-  hidden_value: no
+  value: http://satellite.lab.lou
+- name: destroy_vm_on_host_delete
+  value: true
+  field_type: boolean
+
+global_parameters:
+- name: loader_timeout
+  value: 1
+
+timesync_ntp_provider: chrony
+timesync_ntp_servers:
+  - hostname: 192.168.11.21
+    iburst: true
 
 safe_mode: false
 storage_pools:

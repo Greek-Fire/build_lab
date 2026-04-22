@@ -1,16 +1,16 @@
-- include_tasks: pre_tasks.yml
+#- include_tasks: pre_tasks.yml
 
-- name: Configure libvirt services
-  ansible.builtin.import_tasks: services.yml
+#- name: Configure libvirt services
+#  ansible.builtin.import_tasks: services.yml
 
-- name: Configure libvirt networking
-  ansible.builtin.import_tasks: network.yml
+#- name: Configure libvirt networking
+#  ansible.builtin.import_tasks: network.yml
 
-- name: Configure libvirt storage
-  ansible.builtin.import_tasks: storage.yml
+#- name: Configure libvirt storage
+#  ansible.builtin.import_tasks: storage.yml
 
-- name: Configure host firewall using RHEL system role
-  ansible.builtin.import_tasks: firewall.yml
-  
-- ansible.builtin.import_tasks: kickstart_iso.yml
-- ansible.builtin.import_tasks: create_vm.yml
+#- name: Configure host firewall using RHEL system role
+#  ansible.builtin.import_tasks: firewall.yml
+
+- ansible.builtin.include_tasks: create_vms.yml
+  loop: "{{ vms }}"

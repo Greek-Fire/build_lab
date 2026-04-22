@@ -1,0 +1,23 @@
+ipaclient_domain: lab.lou
+ipaclient_configure_dns_resolver: true
+ipaclient_dns_servers: 192.168.11.21
+
+timesync_ntp_provider: chrony
+timesync_ntp_servers:
+  - hostname: 192.168.11.21
+    iburst: true
+timesync_chrony_allow:
+  - 192.168.11.0/24
+timesync_chrony_local_stratum: 10
+
+rhsm_enable_repos: 
+- name: rhel-9-for-x86_64-baseos-rpms
+  state: enabled
+- name: rhel-9-for-x86_64-appstream-rpms
+  state: enabled
+rhc_insights:
+  state: absent
+rhc_auth:
+  login:
+    username: "{{ rhsm_username }}"
+    password: "{{ rhsm_password }}"

@@ -1,0 +1,51 @@
+- hosts: satellite
+  gather_facts: 0
+  vars_files:
+  - ~/.vault/satellite_facts.yml
+  tasks:
+  - redhat.satellite.host:
+      username: "{{ satellite_username }}"
+      password: "{{ satellite_password }}"
+      server_url: "{{ satellite_server_url }}"
+      validate_certs: "{{ satellite_validate_certs }}"
+      organization: "{{ satellite_organization }}"
+      location: "{{ satellite_location }}"
+      name: stig-none.lab.lou
+      state: "{{ state | default('present') }}"
+      compute_resource: main.lab.lou
+      content_view: rhel9-kickstart
+      lifecycle_environment: Library
+      content_source: satellite.lab.lou
+      architecture: x86_64
+      operatingsystem: RHEL-KS 9.7
+      kickstart_repository: "Red Hat Enterprise Linux 9 for x86_64 - BaseOS Kickstart 9.7"
+      provision_method: build
+      ptable: Compliance STIG Virtual
+      build: true
+      managed: true
+      interfaces_attributes:
+        - type: interface
+          name: test.lab.lou
+          managed: true
+          primary: true
+          provision: true
+          execution: true
+          ip: 192.168.11.200
+          subnet: 192.168.11.0
+          domain: lab.lou
+          compute_attributes:
+            type: network
+            network: "192.168.11.0"
+            model: virtio
+      compute_attributes:
+        cpus: 2
+        memory: 8192
+        start: true
+        firmware: automatic
+        volumes_attributes:
+          "0":
+            pool_name: default
+            capacity: "50"
+            allocation: "0"
+            format_type: qcow2
+      

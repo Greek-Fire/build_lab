@@ -2,17 +2,40 @@
     name: redhat.satellite.manifest
   when: setup_manifest | bool
 
+- name: "Set a Setting"
+  redhat.satellite.setting:
+    username: "{{ satellite_username | default(omit) }}"
+    password: "{{ satellite_password | default(omit) }}"
+    server_url: "{{ satellite_server_url | default(omit) }}"
+    validate_certs: "{{ satellite_validate_certs | default(omit) }}"
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+  loop: "{{ settings }}"
+  tags:
+  - settings
+  - hostgroups
+
 - include_role:
     name: redhat.satellite.repositories
     apply:
       tags: 
       - products
-      - hostgroups
   when: 
   - satellite_products | length > 0
   tags:
   - products
+
+- include_tasks: 
+    file: global_parameter.yml
+    apply:
+      tags: 
+      - global_parameters
+      - hostgroups
+  when: 
+  - global_parameters | length > 0
+  tags:
   - hostgroups
+  - global_parameters  
 
 - include_tasks: 
     file: installation_medium.yml
@@ -31,11 +54,9 @@
     apply:
       tags: 
       - sync_repositories
-      - hostgroups
   when: 
   - satellite_products | length > 0
   tags:
-  - hostgroups
   - sync_repositories  
 
 - include_role:
@@ -81,7 +102,6 @@
     apply:
       tags:
       - sync_content_views
-      - hostgroups
   when: 
   - satellite_content_views | length > 0
 

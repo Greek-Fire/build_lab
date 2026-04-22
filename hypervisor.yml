@@ -5,5 +5,4 @@
   - ~/.vault/facts.yml
   gather_facts: 1
   roles:
-  - role: manage_users
   - role: hypervisor

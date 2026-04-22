@@ -1,0 +1,9 @@
+manage_users:
+- username: greek_fire
+  state: present
+  comment: "Access from foreman"
+  password_hash: "{{ admin_hash }}"
+  ssh_no_password: true
+  ssh_authorized_keys:
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDrbAIIEsPMDq5qF00RvdpWN8BgZOi4vuZnZxIxQ9w7OhCAoVWeE/KbapjBgoO0qAbRnGKDx23S7OC+C+Zu4rBytc24cBtyElxWkFEmIqZ2L9STUiEWU21SFIpR0bpVvyrUA42rS21c+Ug1IFKv5cfxUbnU0u7sHjMc/D2YDnxNmJl/yuueGQCcMzG8kENEhi2Ob4QXWKR5rl5nzpB+Ci0a8rAZ5vspVmH6a/1KElqU+HHBngoJl8aF0IuNlE9sYIDA9KW8DO5l2XsTw3XFlxunxEDcaqu6bvD/6QXtvEj2k4//KYZe00y9vJYfhtxC6I7g+3WZtId7vDU4lE5mGo3lfh6oed9AKtY+L9yJ86WPkk+fTDvJH/Kk8Sk9G1ZdojmCPIzI+3234eshLOa46HKowxZbTzD8+igyS7tC9WUH7tkxIh6C/ymLlpsJ7Nj1FU0xLSOQ79eDzwuBuqmOLxs3pP9aCgCuSjR1oen6WKVXw7iiW5bksDINGK9e4JvjiV8= greek_fire@main.lab.lou
+  shell: /bin/bash
