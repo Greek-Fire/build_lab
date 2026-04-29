@@ -1,0 +1,5 @@
+# templates/99-argus-redis.conf.j2
+# Managed by Ansible
+
+# Required by Redis for reliable fork-based background saves/AOF rewrites.
+vm.overcommit_memory = 1

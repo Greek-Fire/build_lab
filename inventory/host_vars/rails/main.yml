@@ -29,7 +29,7 @@ network_connections:
     address:
     - 192.168.11.31/24
     gateway4: 192.168.11.1
-    dns: 192.168.11.21
+    dns: 192.168.11.1
 
 
 rails_app_name: controls

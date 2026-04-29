@@ -1,0 +1,16 @@
+---
+
+- name: Ensure PostgreSQL module stream is enabled
+  ansible.builtin.command:
+    cmd: "dnf -y module enable {{ argus_postgresql_module }}"
+  register: argus_pg_module_enable
+  changed_when: >
+    'Enabling module streams' in argus_pg_module_enable.stdout or
+    'Complete!' in argus_pg_module_enable.stdout
+  failed_when: argus_pg_module_enable.rc != 0
+  when: argus_postgresql_module | length > 0
+
+- name: Install Satellite Ruby gems using Satellite repo plus RHEL dependency repos
+  ansible.builtin.dnf:
+    name: "{{ argus_rpms | default([]) }}"
+    state: present

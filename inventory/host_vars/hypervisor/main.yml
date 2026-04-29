@@ -76,36 +76,36 @@ libvirt_default_network:
   xml_content: 
 
 vms:
-#- name: rails 
-#  fqdn: rails.lab.lou
-#  ip: 192.168.11.31
-#  netmask: 255.255.255.0
-#  gateway: 192.168.11.1
-#  nameserver: 192.168.11.21
-#  memory_mb: 8192 
-#  vcpus: 4
-#  disk_gb: 100 
-#  internet: 192.168.11.0
-#  ks_dir: "{{ libvirt_storage_pool_path }}/kickstarts"
-#  iso_dir: "{{ libvirt_storage_pool_path }}/boot"
-#  ks_file: ks.cfg
-#  ks_iso: rails-ks.iso
-#  rhel9_bootiso: "{{ libvirt_storage_pool_path }}/boot/rhel-9.7-x86_64-dvd.iso"
-- name: idm 
-  fqdn: idm.lab.lou
-  ip: 192.168.11.21
+- name: rails 
+  fqdn: rails.lab.lou
+  ip: 192.168.11.31
   netmask: 255.255.255.0
   gateway: 192.168.11.1
-  nameserver: 192.168.11.1
+  nameserver: 192.168.11.21
   memory_mb: 8192 
-  vcpus: 2
-  disk_gb: 100
+  vcpus: 4
+  disk_gb: 100 
   internet: 192.168.11.0
   ks_dir: "{{ libvirt_storage_pool_path }}/kickstarts"
   iso_dir: "{{ libvirt_storage_pool_path }}/boot"
   ks_file: ks.cfg
-  ks_iso: idm-ks.iso
+  ks_iso: rails-ks.iso
   rhel9_bootiso: "{{ libvirt_storage_pool_path }}/boot/rhel-9.7-x86_64-dvd.iso"
+#- name: idm 
+#  fqdn: idm.lab.lou
+#  ip: 192.168.11.21
+#  netmask: 255.255.255.0
+#  gateway: 192.168.11.1
+#  nameserver: 192.168.11.1
+#  memory_mb: 8192 
+#  vcpus: 2
+#  disk_gb: 100
+#  internet: 192.168.11.0
+#  ks_dir: "{{ libvirt_storage_pool_path }}/kickstarts"
+#  iso_dir: "{{ libvirt_storage_pool_path }}/boot"
+#  ks_file: ks.cfg
+#  ks_iso: idm-ks.iso
+#  rhel9_bootiso: "{{ libvirt_storage_pool_path }}/boot/rhel-9.7-x86_64-dvd.iso"
 - name: satellite
   fqdn: satellite.lab.lou
   ip: 192.168.11.11

@@ -1,0 +1,67 @@
+- name: Check whether PostgreSQL cluster is initialized
+  ansible.builtin.stat:
+    path: "{{ argus_db_data_path }}/PG_VERSION"
+  register: argus_pg_cluster
+
+- name: Initialize PostgreSQL database cluster
+  ansible.builtin.command:
+    cmd: postgresql-setup --initdb
+  when: not argus_pg_cluster.stat.exists
+
+- name: Configure PostgreSQL main config
+  ansible.builtin.template:
+    src: postgresql.conf.j2
+    dest: "{{ argus_postgresql_conf }}"
+    owner: "{{ argus_postgresql_user }}"
+    group: "{{ argus_postgresql_user }}"
+    mode: "0600"
+  notify: Restart PostgreSQL
+
+- name: Configure PostgreSQL host based authentication
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: "{{ argus_pg_hba_conf }}"
+    owner: "{{ argus_postgresql_user }}"
+    group: "{{ argus_postgresql_user }}"
+    mode: "0600"
+  notify: Reload PostgreSQL
+
+- name: Start PostgreSQL
+  ansible.builtin.systemd:
+    name: "{{ argus_postgresql_service }}"
+    enabled: true
+    state: started
+
+- name: Ensure PostgreSQL role exists
+  ansible.builtin.command:
+    cmd: >
+      sudo -u {{ argus_postgresql_user }} psql -tc
+      "SELECT 1 FROM pg_roles WHERE rolname='{{ argus_db_user }}'"
+  register: argus_pg_role_check
+  changed_when: false
+
+- name: Create PostgreSQL role for peer auth
+  ansible.builtin.command:
+    cmd: >
+      sudo -u {{ argus_postgresql_user }} createuser
+      --no-superuser
+      --no-createdb
+      --no-createrole
+      {{ argus_db_user }}
+  when: "'1' not in argus_pg_role_check.stdout"
+
+- name: Ensure PostgreSQL database exists
+  ansible.builtin.command:
+    cmd: >
+      sudo -u {{ argus_postgresql_user }} psql -tc
+      "SELECT 1 FROM pg_database WHERE datname='{{ argus_db_name }}'"
+  register: argus_pg_db_check
+  changed_when: false
+
+- name: Create PostgreSQL database owned by rails
+  ansible.builtin.command:
+    cmd: >
+      sudo -u {{ argus_postgresql_user }} createdb
+      --owner={{ argus_db_user }}
+      {{ argus_db_name }}
+  when: "'1' not in argus_pg_db_check.stdout"

@@ -1,0 +1,51 @@
+# templates/httpd-argus.conf.j2
+# Managed by Ansible
+
+<VirtualHost *:443>
+    ServerName {{ argus_fqdn }}
+
+    SSLEngine on
+    SSLCertificateFile {{ argus_tls_cert }}
+    SSLCertificateKeyFile {{ argus_tls_key }}
+
+    ProxyRequests Off
+    ProxyPreserveHost On
+
+    RequestHeader set X-Forwarded-Proto "https"
+
+    # Strip spoofable identity headers from all client requests.
+    RequestHeader unset X-Authenticated-User
+    RequestHeader unset X-Authenticated-Email
+    RequestHeader unset X-Authenticated-Groups
+    RequestHeader unset X-Authenticated-Sub
+    RequestHeader unset X-Authenticated-Issuer
+
+{% if argus_oidc_enabled | default(false) %}
+    # OIDC provider config
+    OIDCProviderMetadataURL {{ argus_oidc_provider_metadata_url }}
+    OIDCClientID {{ argus_oidc_client_id }}
+    OIDCClientSecret {{ argus_oidc_client_secret }}
+    OIDCRedirectURI {{ argus_oidc_redirect_uri }}
+    OIDCCryptoPassphrase {{ argus_oidc_crypto_passphrase }}
+    OIDCScope "{{ argus_oidc_scope | default('openid email profile groups') }}"
+    OIDCRemoteUserClaim sub
+
+    # Only this route forces OIDC.
+    # Rails maps these verified headers to a local User, then sets session[:user_id].
+    <Location /auth/oidc>
+        AuthType openid-connect
+        Require valid-user
+
+        RequestHeader set X-Authenticated-Sub    "%{OIDC_CLAIM_sub}e"
+        RequestHeader set X-Authenticated-User   "%{OIDC_CLAIM_preferred_username}e"
+        RequestHeader set X-Authenticated-Email  "%{OIDC_CLAIM_email}e"
+        RequestHeader set X-Authenticated-Groups "%{OIDC_CLAIM_groups}e"
+        RequestHeader set X-Authenticated-Issuer "%{OIDC_CLAIM_iss}e"
+    </Location>
+{% endif %}
+
+    # Everything else goes to Rails.
+    # Rails owns /login, sessions, users, roles, and permissions.
+    ProxyPass        / unix:{{ argus_puma_socket }}|http://localhost/
+    ProxyPassReverse / unix:{{ argus_puma_socket }}|http://localhost/
+</VirtualHost>

@@ -1,0 +1,35 @@
+- name: Ensure rails service group exists
+  ansible.builtin.group:
+    name: "argus"
+    system: true
+    state: present
+
+- name: Ensure rails service user exists and cannot log in
+  ansible.builtin.user:
+    name: argus 
+    group: argus 
+    home: "{{ argus_home }}"
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: true
+    password_lock: true
+    state: present
+
+- name: Add rails user to redis group for Unix socket access
+  ansible.builtin.user:
+    name: argus 
+    groups: redis 
+    append: true
+
+- name: Ensure app directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: "{{ argus_home }}", owner: "{{ argus_user }}", group: "{{ argus_group }}", mode: "0750" }
+    - { path: "{{ argus_home }}/config", owner: "{{ argus_user }}", group: "{{ argus_group }}", mode: "0750" }
+    - { path: "{{ argus_home }}/tmp", owner: "{{ argus_user }}", group: "{{ argus_group }}", mode: "0750" }
+    - { path: "{{ argus_home }}/log", owner: "{{ argus_user }}", group: "{{ argus_group }}", mode: "0750" }

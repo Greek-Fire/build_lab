@@ -1,0 +1,21 @@
+# Managed by Ansible
+
+port 0
+protected-mode yes
+
+unixsocket {{ argus_redis_socket }}
+unixsocketperm 770
+
+supervised systemd
+daemonize no
+
+dir /var/lib/redis
+
+save 900 1
+save 300 10
+save 60 10000
+
+appendonly yes
+appendfilename "appendonly.aof"
+
+loglevel notice

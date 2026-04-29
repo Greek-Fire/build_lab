@@ -1,0 +1,16 @@
+# Managed by Ansible
+
+listen_addresses = ''
+unix_socket_directories = '{{ argus_db_socket_path }}'
+
+password_encryption = scram-sha-256
+
+shared_buffers = 256MB
+max_connections = 100
+
+logging_collector = on
+log_directory = 'log'
+log_filename = 'postgresql-%a.log'
+log_rotation_age = 1d
+log_rotation_size = 0
+log_line_prefix = '%m [%p] %u@%d '

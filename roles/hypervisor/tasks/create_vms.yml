@@ -2,15 +2,15 @@
   ansible.builtin.file:
     path: "{{ item.ks_dir }}"
     state: directory
-    owner: "{{ libvirt_image_owner }}" 
+    owner: "{{ libvirt_image_owner }}"
     group: "{{ libvirt_image_group }}"
     mode: "0755"
 
-- name: Ensure Kickstart directory exists
+- name: Ensure libvirt boot directory exists
   ansible.builtin.file:
     path: "/var/lib/libvirt/boot"
     state: directory
-    owner: "{{ libvirt_image_owner }}" 
+    owner: "{{ libvirt_image_owner }}"
     group: "{{ libvirt_image_group }}"
     mode: "0755"
 
@@ -35,14 +35,118 @@
     cmd: "ksvalidator -v RHEL9 {{ item.ks_dir }}/{{ item.ks_file }}"
   changed_when: false
 
-- name: Build Satellite custom ISO
+- name: Ensure ISO work directory is absent
+  ansible.builtin.file:
+    path: "{{ item.iso_dir }}/work-{{ item.name | default('rhel9') }}"
+    state: absent
+
+- name: Ensure ISO work directory exists
+  ansible.builtin.file:
+    path: "{{ item.iso_dir }}/work-{{ item.name | default('rhel9') }}"
+    state: directory
+    owner: "{{ libvirt_image_owner }}"
+    group: "{{ libvirt_image_group }}"
+    mode: "0755"
+
+- name: Build temporary Kickstart ISO
   ansible.builtin.command:
     cmd: >-
       mkksiso
       {{ item.ks_dir }}/{{ item.ks_file }}
       {{ item.rhel9_bootiso }}
-      {{ item.iso_dir }}/{{ item.ks_iso }}
+      {{ item.iso_dir }}/tmp-{{ item.ks_iso }}
   args:
-    creates: "{{ item.iso_dir }}/{{ item.ks_iso }}"
+    creates: "{{ item.iso_dir }}/tmp-{{ item.ks_iso }}"
+
+- name: Mount temporary Kickstart ISO
+  ansible.posix.mount:
+    path: "{{ item.iso_dir }}/mnt-{{ item.name | default('rhel9') }}"
+    src: "{{ item.iso_dir }}/tmp-{{ item.ks_iso }}"
+    fstype: iso9660
+    opts: loop,ro
+    state: mounted
+  become: true
+
+- name: Copy ISO contents to writable work directory
+  ansible.builtin.command:
+    cmd: >-
+      cp -a
+      {{ item.iso_dir }}/mnt-{{ item.name | default('rhel9') }}/.
+      {{ item.iso_dir }}/work-{{ item.name | default('rhel9') }}/
+  changed_when: true
+  become: true
+
+- name: Unmount temporary Kickstart ISO
+  ansible.posix.mount:
+    path: "{{ item.iso_dir }}/mnt-{{ item.name | default('rhel9') }}"
+    state: unmounted
+  become: true
+
+- name: Remove ISO mount directory
+  ansible.builtin.file:
+    path: "{{ item.iso_dir }}/mnt-{{ item.name | default('rhel9') }}"
+    state: absent
+  become: true
+
+- name: Disable BIOS ISOLINUX countdown
+  ansible.builtin.replace:
+    path: "{{ item.iso_dir }}/work-{{ item.name | default('rhel9') }}/isolinux/isolinux.cfg"
+    regexp: '^timeout\s+\d+'
+    replace: 'timeout 0'
+
+- name: Disable UEFI GRUB countdown
+  ansible.builtin.replace:
+    path: "{{ item.iso_dir }}/work-{{ item.name | default('rhel9') }}/EFI/BOOT/grub.cfg"
+    regexp: '^set timeout=.*'
+    replace: 'set timeout=0'
+
+- name: Ensure UEFI GRUB default entry is first entry
+  ansible.builtin.lineinfile:
+    path: "{{ item.iso_dir }}/work-{{ item.name | default('rhel9') }}/EFI/BOOT/grub.cfg"
+    insertafter: '^set timeout=0'
+    line: 'set default=0'
+    state: present
+
+- name: Remove existing final custom ISO
+  ansible.builtin.file:
+    path: "{{ item.iso_dir }}/{{ item.ks_iso }}"
+    state: absent
+
+- name: Rebuild final custom ISO without boot menu delay
+  ansible.builtin.command:
+    cmd: >-
+      xorrisofs
+      -o {{ item.iso_dir }}/{{ item.ks_iso }}
+      -b isolinux/isolinux.bin
+      -c isolinux/boot.cat
+      -no-emul-boot
+      -boot-load-size 4
+      -boot-info-table
+      -eltorito-alt-boot
+      -e images/efiboot.img
+      -no-emul-boot
+      -isohybrid-gpt-basdat
+      -R
+      -J
+      -V RHEL9-KS
+      {{ item.iso_dir }}/work-{{ item.name | default('rhel9') }}
+  changed_when: true
+
+- name: Set ownership on final custom ISO
+  ansible.builtin.file:
+    path: "{{ item.iso_dir }}/{{ item.ks_iso }}"
+    owner: "{{ libvirt_image_owner }}"
+    group: "{{ libvirt_image_group }}"
+    mode: "0644"
+
+- name: Remove temporary Kickstart ISO
+  ansible.builtin.file:
+    path: "{{ item.iso_dir }}/tmp-{{ item.ks_iso }}"
+    state: absent
+
+- name: Remove ISO work directory
+  ansible.builtin.file:
+    path: "{{ item.iso_dir }}/work-{{ item.name | default('rhel9') }}"
+    state: absent
 
 - include_tasks: _create_vm.yml

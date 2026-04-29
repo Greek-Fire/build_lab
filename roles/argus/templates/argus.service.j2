@@ -1,0 +1,68 @@
+# Managed by Ansible
+
+[Unit]
+Description=Argus,Rails,Puma,redis,postgresql,httpd 
+After=network-online.target {{ argus_postgresql_service }}.service {{ argus_redis_service }}.service
+Requires={{ argus_postgresql_service }}.service {{ argus_redis_service }}.service
+Wants=network-online.target
+Before=httpd.service
+
+[Service]
+Type=simple
+
+User={{ argus_user }}
+Group={{ argus_group }}
+SupplementaryGroups={{ argus_redis_group }}
+
+WorkingDirectory={{ argus_home }}
+
+Environment=RAILS_ENV={{ argus_env }}
+Environment=RAILS_SERVE_STATIC_FILES=true
+Environment=RAILS_LOG_TO_STDOUT=true
+Environment=REDIS_URL=unix://{{ argus_redis_socket }}
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+
+RuntimeDirectory={{ argus_user }}/puma
+RuntimeDirectoryMode=0750
+
+ExecStartPre=/usr/bin/bash -c "pg_isready -h {{ argus_db_socket_path }} -U {{ argus_db_user }} -d {{ argus_db_name }}"
+ExecStart=/usr/bin/bash -lc 'bundle exec puma -C config/puma.rb'
+ExecStop=/bin/kill -TERM $MAINPID
+
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=45
+KillSignal=SIGTERM
+KillMode=mixed
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=argus
+
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+
+ReadWritePaths={{ argus_home }}/tmp {{ argus_home }}/log {{ argus_puma_socket_path }} {{ argus_redis_socket_path }} {{ argus_db_socket_path }}
+
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX
+
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target

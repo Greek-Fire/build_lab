@@ -1,0 +1,15 @@
+# Managed by Ansible
+
+environment ENV.fetch("RAILS_ENV") { "{{ argus_env }}" }
+
+directory "{{ argus_home }}"
+
+bind "unix://{{ argus_puma_socket }}?umask=0007"
+
+pidfile "{{ argus_puma_socket_path }}/puma.pid"
+state_path "{{ argus_puma_socket_path }}/puma.state"
+
+workers {{ argus_puma_workers }}
+threads {{ argus_puma_min_threads }}, {{ argus_puma_max_threads }}
+
+preload_app!

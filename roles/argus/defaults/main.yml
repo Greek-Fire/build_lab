@@ -1,0 +1,66 @@
+argus_rpms:  
+  - rubygem-rails
+  - rubygem-pg
+  - rubygem-bcrypt
+  - rubygem-jwt
+  - rubygem-ldap_fluff
+  - rubygem-redis
+  - rubygem-sidekiq
+  - rubygem-scoped_search
+  - rubygem-will_paginate
+  - rubygem-audited
+  - rubygem-validates_lengths_from_database
+  - rubygem-secure_headers
+  - rubygem-fast_gettext
+  - rubygem-logging
+  - rubygem-activerecord-session_store
+  - rubygem-puma
+  - rubygem-sinatra
+  - postgresql-server
+  - postgresql
+  - redis
+  - nodejs
+  - httpd
+  - httpd-tools
+  - mod_ssl
+  - mod_auth_openidc
+  - git
+  - policycoreutils-python-utils
+  
+argus_postgresql_module: "postgresql:16"
+
+argus_user: argus
+argus_group: argus
+argus_home: "/var/lib/argus"
+argus_runtime_path: "/var/run/argus"
+argus_env: prod
+argus_db_user: argus
+argus_db_name: argus
+argus_db_data_path: /var/lib/pgsql/data
+argus_db_socket_path: /var/run/postgresql
+argus_puma_socket_path: /var/run/argus/puma
+argus_puma_socket: /var/run/argus/puma/puma.sock
+argus_puma_workers: 2
+argus_puma_min_threads: 1
+argus_puma_max_threads: 5
+
+argus_redis_service: redis
+argus_redis_user: redis
+argus_redis_group: redis
+argus_redis_conf: /etc/redis/redis.conf
+argus_redis_socket_path: /var/run/redis
+argus_redis_socket: /var/run/redis/redis.sock
+
+argus_postgresql_service: postgresql
+argus_postgresql_user: postgres
+
+# Confirm these paths with:
+# sudo -u postgres psql -tAc "SHOW config_file;"
+# sudo -u postgres psql -tAc "SHOW hba_file;"
+argus_postgresql_conf: /var/lib/pgsql/data/postgresql.conf
+argus_pg_hba_conf: /var/lib/pgsql/data/pg_hba.conf
+
+argus_fqdn: argus.lab.lou
+argus_httpd_conf: /etc/httpd/conf.d/argus.conf
+argus_tls_cert: /etc/pki/tls/certs/argus.crt
+argus_tls_key: /etc/pki/tls/private/argus.key

@@ -1,0 +1,9 @@
+# Managed by Ansible
+
+production:
+  adapter: postgresql
+  encoding: unicode
+  database: {{ argus_db_name }}
+  username: {{ argus_db_user }}
+  host: {{ argus_db_socket_path }}
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", {{ argus_puma_max_threads }}) %>

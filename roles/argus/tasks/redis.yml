@@ -1,0 +1,37 @@
+
+- name: Configure Redis for Unix socket only
+  ansible.builtin.template:
+    src: redis.conf.j2
+    dest: "{{ argus_redis_conf }}"
+    owner: "{{ argus_redis_user }}"
+    group: "{{ argus_redis_group }}"
+    mode: "0640"
+  notify: Restart Redis
+
+- name: Create Redis systemd override directory
+  ansible.builtin.file:
+    path: "/etc/systemd/system/{{ argus_redis_service }}.service.d"
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Configure Redis memory overcommit sysctl
+  ansible.builtin.template:
+    src: 99-argus-redis.conf.j2
+    dest: /etc/sysctl.d/99-argus-redis.conf
+    owner: root
+    group: root
+    mode: "0640"
+  notify: Reload sysctl1
+
+- name: Configure Redis systemd runtime directory
+  ansible.builtin.template:
+    src: redis-override.conf.j2
+    dest: "/etc/systemd/system/redis.service.d/override.conf"
+    owner: root
+    group: root
+    mode: "0640"
+  notify:
+    - Reload systemd
+    - Restart Redis

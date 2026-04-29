@@ -1,0 +1,41 @@
+---
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart PostgreSQL
+  ansible.builtin.systemd:
+    name: "{{ argus_postgresql_service }}"
+    state: restarted
+
+- name: Reload PostgreSQL
+  ansible.builtin.systemd:
+    name: "{{ argus_postgresql_service }}"
+    state: reloaded
+
+- name: Restart Redis
+  ansible.builtin.systemd:
+    name: "{{ argus_redis_service }}"
+    state: restarted
+    daemon_reload: true
+
+- name: Restart Argus 
+  ansible.builtin.systemd:
+    name: argus 
+    state: restarted
+    daemon_reload: true
+
+- name: Restart httpd
+  ansible.builtin.systemd:
+    name: httpd
+    state: restarted
+    daemon_reload: true
+
+- name: Restore Puma runtime SELinux context
+  ansible.builtin.command:
+    cmd: restorecon -Rv '{{ argus_puma_socket_path }}'
+
+- name: Reload sysctl
+  ansible.builtin.command:
+    cmd: sysctl --system
+  changed_when: true

@@ -1,8 +1,9 @@
 - hosts: rails
   gather_facts: 1
+  become: true
   vars_files:
   - ~/.vault/satellite_facts.yml
   roles:
-  - redhat.rhel_system_roles.rhc
-  - redhat.rhel_system_roles.network
-  - rails
+  #- redhat.rhel_system_roles.network
+  #- redhat.rhel_system_roles.rhc
+  - argus 

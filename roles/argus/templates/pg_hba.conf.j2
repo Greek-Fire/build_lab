@@ -1,0 +1,16 @@
+# Managed by Ansible
+
+# Argus app: local socket only, OS user argus -> DB role argus
+local   {{ argus_db_name }}   {{ argus_db_user }}   peer
+
+# Explicitly reject TCP for the app role/database
+host    {{ argus_db_name }}   {{ argus_db_user }}   127.0.0.1/32   reject
+host    {{ argus_db_name }}   {{ argus_db_user }}   ::1/128        reject
+
+# Local postgres admin access
+local   all                    postgres                peer
+
+# Deny everything else by default
+local   all                    all                     reject
+host    all                    all                     127.0.0.1/32    reject
+host    all                    all                     ::1/128         reject
