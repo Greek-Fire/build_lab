@@ -1,24 +1,16 @@
 ---
-- name: Ensure partition exists
-  community.general.parted:
-    device: "{{ nvme_partition.disk }}"
-    label: gpt
-    number: "{{ nvme_partition.number }}"
-    part_start: "{{ nvme_partition.part_start }}"
-    part_end: "{{ nvme_partition.part_end }}"
-    state: present
-  when: nvme_partition is defined
-
-#- name: Configure local storage layout for virtualization
-#  ansible.builtin.include_role:
-#    name: redhat.rhel_system_roles.storage
-#  vars:
-#    storage_pools: "{{ libvirt_storage_pool}}"
-
 - name: Ensure SELinux is enforcing
   ansible.builtin.selinux:
     policy: targeted
     state: enforcing
+
+- name: Ensure libvirt image directory exists
+  ansible.builtin.file:
+    path: "{{ libvirt_storage_pool_path }}"
+    state: directory
+    owner: "{{ libvirt_image_owner }}"
+    group: "{{ libvirt_image_group }}"
+    mode: "0770"
 
 - name: Set SELinux context for libvirt images directory
   ansible.builtin.command: >

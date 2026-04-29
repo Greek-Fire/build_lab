@@ -31,7 +31,7 @@ part pv.01 --size=1 --grow
 
 volgroup rhel pv.01
 
-logvol /         --vgname=rhel --name=root      --fstype=xfs --size=5120
+logvol /         --vgname=rhel --name=root      --fstype=xfs --size=25480
 logvol /var      --vgname=rhel --name=var       --fstype=xfs --size=5120
 logvol /home     --vgname=rhel --name=home      --fstype=xfs --size=5120 --fsoptions="nodev"
 logvol /tmp      --vgname=rhel --name=tmp       --fstype=xfs --size=5120 --fsoptions="nodev,nosuid,noexec"
@@ -57,4 +57,21 @@ ipa-server
 ipa-server-dns
 bind-dyndb-ldap
 {% endif %}
+%end
+
+%post --log=/root/ks-post.log --erroronfail
+# Allow all members of wheel to run sudo without a password.
+# File name intentionally has no "." because sudoers.d ignores/avoids some names.
+install -d -m 0750 -o root -g root /etc/sudoers.d
+
+cat > /etc/sudoers.d/90-wheel-nopasswd <<'EOF'
+%wheel ALL=(ALL) NOPASSWD: ALL
+EOF
+
+chown root:root /etc/sudoers.d/90-wheel-nopasswd
+chmod 0440 /etc/sudoers.d/90-wheel-nopasswd
+
+if command -v restorecon >/dev/null 2>&1; then
+  restorecon -v /etc/sudoers.d /etc/sudoers.d/90-wheel-nopasswd
+fi
 %end

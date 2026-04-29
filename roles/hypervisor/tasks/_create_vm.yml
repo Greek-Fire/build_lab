@@ -9,7 +9,7 @@
   when: 
   - (clean | default(false) | bool) or (clean_vm | default(false) | bool)
 
-- name: Create Satellite VM
+- name: Create {{ item.name }} VM 
   ansible.builtin.command:
     cmd: >-
       virt-install
@@ -20,7 +20,7 @@
       {{ network_args }}
       --cdrom {{ item.iso_dir }}/{{ item.ks_iso }}
       --location {{ item.iso_dir }}/{{ item.ks_iso }}
-      --extra-args "inst.ks=cdrom:/ks.cfg inst.text"
+      --extra-args "inst.ks=cdrom:/{{ item.ks_file }} inst.text"
       --boot uefi
   async: 600
   poll: 0

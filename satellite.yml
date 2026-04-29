@@ -1,15 +1,14 @@
 ---
-#- hosts: ipaclients
-#  become: true
-#  vars_files:
-#  - ~/.vault/satellite_facts.yml
-#  roles:
-#  - redhat.rhel_system_roles.rhc
-#  - redhat.rhel_system_roles.network
-#  - redhat.rhel_system_roles.storage
-#  - redhat.rhel_idm.ipaclient
-#  - redhat.rhel_system_roles.timesync
-#  - redhat.rhel_system_roles.firewall
+- hosts: ipaclients
+  become: true
+  vars_files:
+  - ~/.vault/satellite_facts.yml
+  roles:
+  - redhat.rhel_system_roles.rhc
+  - redhat.rhel_system_roles.network
+  - redhat.rhel_system_roles.storage
+  - redhat.rhel_idm.ipaclient
+  - redhat.rhel_system_roles.timesync
 
 - hosts: satellite
   become: true
@@ -21,3 +20,4 @@
   - install_satellite
   - manage_users
   - configure_satellite
+  - redhat.rhel_system_roles.firewall

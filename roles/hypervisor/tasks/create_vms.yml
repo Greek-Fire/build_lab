@@ -2,24 +2,32 @@
   ansible.builtin.file:
     path: "{{ item.ks_dir }}"
     state: directory
-    owner: qemu
-    group: root
+    owner: "{{ libvirt_image_owner }}" 
+    group: "{{ libvirt_image_group }}"
+    mode: "0755"
+
+- name: Ensure Kickstart directory exists
+  ansible.builtin.file:
+    path: "/var/lib/libvirt/boot"
+    state: directory
+    owner: "{{ libvirt_image_owner }}" 
+    group: "{{ libvirt_image_group }}"
     mode: "0755"
 
 - name: Ensure ISO directory exists
   ansible.builtin.file:
     path: "{{ item.iso_dir }}"
     state: directory
-    owner: qemu
-    group: root
+    owner: "{{ libvirt_image_owner }}"
+    group: "{{ libvirt_image_group }}"
     mode: "0755"
 
 - name: Render Kickstart file
   ansible.builtin.template:
     src: satellite.ks.j2
     dest: "{{ item.ks_dir }}/{{ item.ks_file }}"
-    owner: qemu
-    group: root
+    owner: "{{ libvirt_image_owner }}"
+    group: "{{ libvirt_image_group }}"
     mode: "0644"
 
 - name: Validate Kickstart syntax

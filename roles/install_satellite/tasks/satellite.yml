@@ -43,27 +43,27 @@
     - libvirt-client
     - puppet-agent
     state: present
-
-- name: Configure Satellite Server
-  become: true
-  ansible.builtin.command: >
-    satellite-installer --scenario satellite \
-    --foreman-initial-organization {{ satellite_organization }} \
-    --foreman-initial-location {{ satellite_location }} \
-    --foreman-initial-admin-username {{ satellite_admin_username }} \
-    --foreman-initial-admin-password {{ satellite_admin_password }} \  
-    --foreman-proxy-tftp true \
-    --foreman-proxy-tftp-managed true \
-    --foreman-proxy-tftp-servername 192.168.11.11 \
-    --foreman-proxy-dhcp true \
-    --foreman-proxy-dhcp-managed true \
-    --foreman-proxy-dhcp-interface enp1s0 \
-    --foreman-proxy-dhcp-range "192.168.11.100 192.168.11.200" \
-    --foreman-proxy-dhcp-gateway 192.168.11.1 \
-    --foreman-proxy-dhcp-nameservers 192.168.11.1 \
-    --foreman-proxy-dhcp-option-domain lab.lou \
-    --certs-server-cert /etc/pki/tls/{{ ansible_fqdn }}.crt \
-    --certs-server-key /etc/pki/tls/{{ ansible_fqdn }}.key \
-    --certs-server-ca-cert /etc/ipa/ca.crt \
-    --certs-update-server \
-    --certs-update-server-ca
+#
+#- name: Configure Satellite Server
+#  become: true
+#  ansible.builtin.command: >
+#    satellite-installer --scenario satellite \
+#    --foreman-initial-organization {{ satellite_organization }} \
+#    --foreman-initial-location {{ satellite_location }} \
+#    --foreman-initial-admin-username {{ satellite_admin_username }} \
+#    --foreman-initial-admin-password {{ satellite_admin_password }} \  
+#    --foreman-proxy-tftp true \
+#    --foreman-proxy-tftp-managed true \
+#    --foreman-proxy-tftp-servername 192.168.11.11 \
+#    --foreman-proxy-dhcp true \
+#    --foreman-proxy-dhcp-managed true \
+#    --foreman-proxy-dhcp-interface enp1s0 \
+#    --foreman-proxy-dhcp-range "192.168.11.100 192.168.11.200" \
+#    --foreman-proxy-dhcp-gateway 192.168.11.1 \
+#    --foreman-proxy-dhcp-nameservers 192.168.11.1 \
+#    --foreman-proxy-dhcp-option-domain lab.lou \
+#    --certs-server-cert /etc/pki/tls/{{ ansible_fqdn }}.crt \
+#    --certs-server-key /etc/pki/tls/{{ ansible_fqdn }}.key \
+#    --certs-server-ca-cert /etc/ipa/ca.crt \
+#    --certs-update-server \
+#    --certs-update-server-ca

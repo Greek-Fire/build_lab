@@ -54,27 +54,8 @@ virtualization_packages:
 libvirt_storage_pool_name: default
 libvirt_storage_pool_path: /var/lib/libvirt/images
 libvirt_storage_pool_type: dir
-
-nvme_partition:
-  disk: /dev/nvme1n1
-  number: "4"
-  part_start: 112GiB
-  part_end: 722GiB 
-
-storage_safe_mode: false
-libvirt_storage_pool:
-- name: hypervisor
-  type: lvm
-  disks:
-  - /dev/nvme1n1p4
-  volumes:
-  - name: vm_images
-    size: 600 GiB
-    fs_type: xfs
-    mount_point: /var/lib/libvirt/images
-    mount_user: qemu
-    mount_group: qemu
-    state: present
+libvirt_image_owner: qemu
+libvirt_image_group: root 
 
 libvirt_default_network:
 - name: 192.168.111.0 
@@ -95,6 +76,36 @@ libvirt_default_network:
   xml_content: 
 
 vms:
+#- name: rails 
+#  fqdn: rails.lab.lou
+#  ip: 192.168.11.31
+#  netmask: 255.255.255.0
+#  gateway: 192.168.11.1
+#  nameserver: 192.168.11.21
+#  memory_mb: 8192 
+#  vcpus: 4
+#  disk_gb: 100 
+#  internet: 192.168.11.0
+#  ks_dir: "{{ libvirt_storage_pool_path }}/kickstarts"
+#  iso_dir: "{{ libvirt_storage_pool_path }}/boot"
+#  ks_file: ks.cfg
+#  ks_iso: rails-ks.iso
+#  rhel9_bootiso: "{{ libvirt_storage_pool_path }}/boot/rhel-9.7-x86_64-dvd.iso"
+- name: idm 
+  fqdn: idm.lab.lou
+  ip: 192.168.11.21
+  netmask: 255.255.255.0
+  gateway: 192.168.11.1
+  nameserver: 192.168.11.1
+  memory_mb: 8192 
+  vcpus: 2
+  disk_gb: 100
+  internet: 192.168.11.0
+  ks_dir: "{{ libvirt_storage_pool_path }}/kickstarts"
+  iso_dir: "{{ libvirt_storage_pool_path }}/boot"
+  ks_file: ks.cfg
+  ks_iso: idm-ks.iso
+  rhel9_bootiso: "{{ libvirt_storage_pool_path }}/boot/rhel-9.7-x86_64-dvd.iso"
 - name: satellite
   fqdn: satellite.lab.lou
   ip: 192.168.11.11
