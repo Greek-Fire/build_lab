@@ -58,7 +58,7 @@
   register: argus_pg_db_check
   changed_when: false
 
-- name: Create PostgreSQL database owned by rails
+- name: Create PostgreSQL database owned by Argus 
   ansible.builtin.command:
     cmd: >
       sudo -u {{ argus_postgresql_user }} createdb

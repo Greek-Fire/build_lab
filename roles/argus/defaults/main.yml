@@ -7,6 +7,7 @@ argus_rpms:
   - rubygem-redis
   - rubygem-sidekiq
   - rubygem-scoped_search
+  - rubygem-sprockets-rails
   - rubygem-will_paginate
   - rubygem-audited
   - rubygem-validates_lengths_from_database
@@ -31,9 +32,13 @@ argus_postgresql_module: "postgresql:16"
 
 argus_user: argus
 argus_group: argus
-argus_home: "/var/lib/argus"
+argus_etc_path: /etc/argus
+argus_cert_path: "{{ argus_etc_path }}/tls"
+argus_home_path: "/var/lib/argus"
+argus_home_app_path: "{{ argus_home_path }}/app"
+argus_home_config_path: "{{ argus_home_path }}/config"
 argus_runtime_path: "/var/run/argus"
-argus_env: prod
+argus_environment: production
 argus_db_user: argus
 argus_db_name: argus
 argus_db_data_path: /var/lib/pgsql/data
@@ -62,5 +67,5 @@ argus_pg_hba_conf: /var/lib/pgsql/data/pg_hba.conf
 
 argus_fqdn: argus.lab.lou
 argus_httpd_conf: /etc/httpd/conf.d/argus.conf
-argus_tls_cert: /etc/pki/tls/certs/argus.crt
-argus_tls_key: /etc/pki/tls/private/argus.key
+argus_tls_cert: "{{ argus_cert_path }}/cert/argus.crt"
+argus_tls_key: "{{ argus_cert_path }}/private/argus.key"

@@ -1,8 +1,8 @@
 # Managed by Ansible
 
-environment ENV.fetch("RAILS_ENV") { "{{ argus_env }}" }
+environment ENV.fetch("RAILS_ENV") { "{{ argus_environment }}" }
 
-directory "{{ argus_home }}"
+directory "{{ argus_root_path }}"
 
 bind "unix://{{ argus_puma_socket }}?umask=0007"
 

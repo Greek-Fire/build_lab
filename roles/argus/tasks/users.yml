@@ -25,11 +25,18 @@
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
-    owner: "{{ item.owner }}"
-    group: "{{ item.group }}"
+    owner: "{{ argus_user }}"
+    group: "{{ argus_group }}"
     mode: "{{ item.mode }}"
   loop:
-    - { path: "{{ argus_home }}", owner: "{{ argus_user }}", group: "{{ argus_group }}", mode: "0750" }
-    - { path: "{{ argus_home }}/config", owner: "{{ argus_user }}", group: "{{ argus_group }}", mode: "0750" }
-    - { path: "{{ argus_home }}/tmp", owner: "{{ argus_user }}", group: "{{ argus_group }}", mode: "0750" }
-    - { path: "{{ argus_home }}/log", owner: "{{ argus_user }}", group: "{{ argus_group }}", mode: "0750" }
+    - { path: "{{ argus_home_path }}", mode: "0750" }
+
+- name: Ensure app directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: root 
+    group: "{{ argus_group }}"
+    mode: "{{ item.mode }}"
+  loop:
+  - { path: "{{ argus_etc_path }}", mode: "0750" }

@@ -1,6 +1,6 @@
 # Managed by Ansible
 
-production:
+{{ argus_environment }}:
   adapter: postgresql
   encoding: unicode
   database: {{ argus_db_name }}

@@ -1,0 +1,16 @@
+- name: Ensure app directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ argus_user }}"
+    group: "{{ argus_group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: "{{ argus_home_path }}", mode: "0750" }
+    - { path: "{{ argus_home_path }}/argus", mode: "0750" }
+    - { path: "{{ argus_home_path }}/config", mode: "0750" }
+    - { path: "{{ argus_home_path }}/tmp", mode: "0750" }
+    - { path: "{{ argus_home_path }}/log", mode: "0750" }
+    - { path: "{{ argus_home_app_path }}", mode: "0750" }
+    - { path: "{{ argus_home_config_path }}", mode: "0750" }
+    - { path: "{{ argus_home_config_path }}/envrionments", mode: "0750" }

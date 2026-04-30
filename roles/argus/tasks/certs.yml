@@ -1,17 +1,17 @@
 - name: Ensure TLS private key directory exists
   ansible.builtin.file:
-    path: /etc/pki/tls/private
+    path: "{{ argus_cert_path }}/private"
     state: directory
     owner: root
-    group: root
+    group: "{{ argus_group }}"
     mode: "0700"
 
 - name: Ensure TLS cert directory exists
   ansible.builtin.file:
-    path: /etc/pki/tls/certs
     state: directory
+    path: "{{ argus_cert_path }}/cert"
     owner: root
-    group: root
+    group: "{{ argus_group }}" 
     mode: "0750"
 
 - name: Create self-signed Argus TLS certificate for dev
@@ -19,23 +19,23 @@
     cmd: >
       openssl req -x509 -newkey rsa:4096 -sha256 -days 365
       -nodes
-      -keyout /etc/pki/tls/private/argus.key
-      -out /etc/pki/tls/certs/argus.crt
+      -keyout {{ argus_tls_key }}
+      -out {{ argus_tls_cert }}
       -subj "/CN={{ argus_fqdn }}"
       -addext "subjectAltName=DNS:{{ argus_fqdn }}"
   args:
-    creates: /etc/pki/tls/certs/argus.crt
+    creates: "{{ argus_tls_cert }}"
 
 - name: Set Argus TLS private key permissions
   ansible.builtin.file:
-    path: /etc/pki/tls/private/argus.key
+    path: "{{ argus_tls_key }}"
     owner: root
-    group: root
+    group: "{{ argus_group }}"
     mode: "0600"
 
 - name: Set Argus TLS certificate permissions
   ansible.builtin.file:
-    path: /etc/pki/tls/certs/argus.crt
+    path: "{{ argus_tls_cert }}"
     owner: root
-    group: root
+    group: "{{ argus_group }}"
     mode: "0640"
