@@ -5,5 +5,5 @@
   - ~/.vault/satellite_facts.yml
   roles:
   - redhat.rhel_system_roles.network
-  - redhat.rhel_system_roles.rhc
-  #- argus 
+  #- redhat.rhel_system_roles.rhc
+  - argus 

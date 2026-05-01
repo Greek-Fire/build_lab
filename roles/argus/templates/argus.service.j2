@@ -11,24 +11,19 @@ Before=httpd.service
 Type=simple
 
 User={{ argus_user }}
-Group={{ argus_group }}
-SupplementaryGroups={{ argus_redis_group }}
+Group=apache
+SupplementaryGroups=redis {{ argus_group }}
 
-WorkingDirectory={{ argus_root_path }}
+WorkingDirectory={{ argus_home_path }}
 
-Environment=RAILS_ENV={{ argus_environment }}
-Environment=RAILS_SERVE_STATIC_FILES=true
-Environment=RAILS_LOG_TO_STDOUT=true
-Environment=REDIS_URL=unix://{{ argus_redis_socket }}
-Environment=PATH=/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=/etc/argus/argus.env
 
-RuntimeDirectory={{ argus_user }}/puma
+RuntimeDirectory=argus/puma 
 RuntimeDirectoryMode=0750
 
 ExecStartPre=/usr/bin/bash -c "pg_isready -h {{ argus_db_socket_path }} -U {{ argus_db_user }} -d {{ argus_db_name }}"
-ExecStart=/usr/bin/bash -lc 'bundle exec puma -C config/puma.rb'
+ExecStart=/usr/bin/bundle exec puma -C config/puma.rb
 ExecStop=/bin/kill -TERM $MAINPID
-ExecStartPost=restorecon -R {{ argus_puma_socket_path }}
 
 Restart=on-failure
 RestartSec=5
@@ -36,6 +31,7 @@ TimeoutStopSec=45
 KillSignal=SIGTERM
 KillMode=mixed
 
+Environment=RAILS_LOG_TO_STDOUT=true
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=argus
@@ -46,7 +42,7 @@ PrivateDevices=true
 ProtectSystem=strict
 ProtectHome=true
 
-ReadWritePaths={{ argus_root_path }}/tmp {{ argus_root_path }}/log {{ argus_puma_socket_path }} {{ argus_redis_socket_path }} {{ argus_db_socket_path }}
+ReadWritePaths={{ argus_home_path }}/tmp {{ argus_home_path }}/log /var/run/argus 
 
 ProtectKernelTunables=true
 ProtectKernelModules=true

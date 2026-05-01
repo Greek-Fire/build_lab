@@ -18,3 +18,7 @@
     enabled: true
     state: started
     daemon_reload: true
+
+- name: Reload sysctl
+  ansible.builtin.command:
+    cmd: sysctl --system

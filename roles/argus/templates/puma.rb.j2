@@ -1,15 +1,41 @@
 # Managed by Ansible
 
+# Environment
 environment ENV.fetch("RAILS_ENV") { "{{ argus_environment }}" }
 
-directory "{{ argus_root_path }}"
+# Threads (tune based on CPU/RAM)
+max_threads_count = ENV.fetch("RAILS_MAX_THREADS", 5).to_i
+min_threads_count = ENV.fetch("RAILS_MIN_THREADS", max_threads_count).to_i
+threads min_threads_count, max_threads_count
 
+# Workers (optional – enable if you have RAM)
+workers ENV.fetch("WEB_CONCURRENCY", 2).to_i
+
+# Preload app for memory savings
+preload_app!
+
+# Socket (THIS is critical for your Apache setup)
 bind "unix://{{ argus_puma_socket }}?umask=0007"
 
-pidfile "{{ argus_puma_socket_path }}/puma.pid"
-state_path "{{ argus_puma_socket_path }}/puma.state"
+# PID / state
+pidfile "{{ argus_puma_socket_path }}puma.pid"
+state_path "{{ argus_puma_socket_path }}puma.state"
 
-workers {{ argus_puma_workers }}
-threads {{ argus_puma_min_threads }}, {{ argus_puma_max_threads }}
+# Logging
+#stdout_redirect "/var/lib/argus/log/puma.stdout.log",
+#                "/var/lib/argus/log/puma.stderr.log",
+#                true
 
-preload_app!
+# Worker timeout (important for production stability)
+worker_timeout 60
+
+# Restart support
+plugin :tmp_restart
+
+# Optional: better shutdown handling
+on_worker_boot do
+  # ActiveRecord reconnect
+  if defined?(ActiveRecord)
+    ActiveRecord::Base.establish_connection
+  end
+end

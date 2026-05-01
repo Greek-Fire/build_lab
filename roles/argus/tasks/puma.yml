@@ -1,15 +1,7 @@
-- name: Configure Rails database.yml
-  ansible.builtin.template:
-    src: database.yml.j2
-    dest: "{{ argus_root_path }}/config/database.yml"
-    owner: "{{ argus_user }}"
-    group: "{{ argus_group }}"
-    mode: "0640"
-
 - name: Configure Puma
   ansible.builtin.template:
     src: puma.rb.j2
-    dest: "{{ argus_root_path }}/config/puma.rb"
+    dest: "{{ argus_home_path }}/config/puma.rb"
     owner: "{{ argus_user }}"
     group: "{{ argus_group }}"
     mode: "0640"
@@ -27,28 +19,3 @@
     - Restart Argus
 - include_tasks: certs.yml
 - include_tasks: httpd.yml
-
-- name: Create Argus Puma runtime directory 
-  ansible.builtin.file:
-    path: "{{ argus_puma_socket_path }}"
-    state: directory
-    owner: root
-    group: "{{ argus_group }}"
-    mode: "0750"
-
-- name: Allow Apache to connect to backend services
-  ansible.posix.seboolean:
-    name: httpd_can_network_connect
-    state: true
-    persistent: true
-
-- name: Label Argus Puma runtime directory for Apache socket access
-  community.general.sefcontext:
-    target: '{{ argus_puma_socket_path }}(/.*)?'
-    setype: httpd_var_run_t
-    state: present
-
-- name: Restore SELinux context on Argus Puma runtime directory
-  ansible.builtin.command:
-    cmd: restorecon -Rv {{ argus_puma_socket_path }}
-  changed_when: false

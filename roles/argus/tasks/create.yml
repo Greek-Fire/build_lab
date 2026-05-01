@@ -1,16 +1,60 @@
-- name: Ensure app directories exist
+- name: Create Argus Home Dir
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
+    owner: "{{ item.user | default(argus_user) }}"
+    group: "{{ item.group | default(argus_group) }}"
+    mode: '0750'
+  loop:
+  - { path: "{{ argus_home_path }}", user: "{{ argus_user }}", group: "{{ argus_group }}" }
+  - { path: "{{ argus_etc_path }}", user: "{{ argus_user }}", group: "{{ argus_group }}" }
+  - { path: "{{ argus_run_path }}", user: "{{ argus_user }}", group: "{{ argus_group }}" }
+
+- name: Ensure app directories exist
+  ansible.builtin.file:
+    path: "{{ argus_home_path }}/{{ item }}"
+    state: directory
     owner: "{{ argus_user }}"
     group: "{{ argus_group }}"
-    mode: "{{ item.mode }}"
+    mode:  "0750"
   loop:
-    - { path: "{{ argus_home_path }}", mode: "0750" }
-    - { path: "{{ argus_home_path }}/argus", mode: "0750" }
-    - { path: "{{ argus_home_path }}/config", mode: "0750" }
-    - { path: "{{ argus_home_path }}/tmp", mode: "0750" }
-    - { path: "{{ argus_home_path }}/log", mode: "0750" }
-    - { path: "{{ argus_home_app_path }}", mode: "0750" }
-    - { path: "{{ argus_home_config_path }}", mode: "0750" }
-    - { path: "{{ argus_home_config_path }}/envrionments", mode: "0750" }
+  - log
+  - tmp
+  - tmp/pids
+  - tmp/storage
+  - tmp/cache
+  - tmp/cache/assets
+  - config
+  - config/environments
+  - app
+  - app/views
+  - app/models
+  - app/controllers
+  - app/views/home
+  - app/views/layouts
+
+- name: Push Ruby Skelton Files 
+  ansible.builtin.copy:
+    src: files/argus/{{ item.name }}
+    dest: "{{ argus_home_path }}/{{ item.dest }}"
+    owner: "{{ argus_user }}"
+    group: "{{ argus_group }}"
+    mode: '0640'
+  loop:
+  - { name: "Gemfile", dest: "Gemfile" }
+  - { name: "Gemfile.lock", dest: "Gemfile.lock" }
+  - { name: "config.ru", dest: "config.ru" }
+  - { name: routes.rb, dest: "config/routes.rb" }
+  - { name: "home_controller.rb", dest: "app/controllers/home_controller.rb" }
+  - { name: "index.html.erb", dest: "app/views/home/index.html.erb" }
+  - { name: "application.html.erb", dest: "app/views/layouts/application.html.erb" }
+  - { name: "environment.rb", dest: "config/environment.rb" }
+  - { name: "application.rb", dest: "config/application.rb" }
+
+- name: Create ENV
+  ansible.builtin.template:
+    src: argus.env.j2
+    dest: /etc/argus/argus.env
+    mode: '0640'
+    owner: "{{ argus_user }}"
+    group: "{{ argus_group }}"

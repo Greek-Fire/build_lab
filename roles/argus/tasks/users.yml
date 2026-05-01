@@ -1,6 +1,6 @@
 - name: Ensure rails service group exists
   ansible.builtin.group:
-    name: "argus"
+    name: argus 
     system: true
     state: present
 
@@ -8,7 +8,8 @@
   ansible.builtin.user:
     name: argus 
     group: argus 
-    home: "{{ argus_home }}"
+    append: true
+    home: "{{ argus_home_path }}"
     shell: /usr/sbin/nologin
     system: true
     create_home: true
@@ -20,23 +21,3 @@
     name: argus 
     groups: redis 
     append: true
-
-- name: Ensure app directories exist
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: directory
-    owner: "{{ argus_user }}"
-    group: "{{ argus_group }}"
-    mode: "{{ item.mode }}"
-  loop:
-    - { path: "{{ argus_home_path }}", mode: "0750" }
-
-- name: Ensure app directories exist
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: directory
-    owner: root 
-    group: "{{ argus_group }}"
-    mode: "{{ item.mode }}"
-  loop:
-  - { path: "{{ argus_etc_path }}", mode: "0750" }

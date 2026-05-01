@@ -4,6 +4,8 @@ argus_rpms:
   - rubygem-bcrypt
   - rubygem-jwt
   - rubygem-ldap_fluff
+  - rubygem-rest-client
+  - rubygem-ancestry
   - rubygem-redis
   - rubygem-sidekiq
   - rubygem-scoped_search
@@ -33,18 +35,16 @@ argus_postgresql_module: "postgresql:16"
 argus_user: argus
 argus_group: argus
 argus_etc_path: /etc/argus
+argus_run_path: /var/run/argus
 argus_cert_path: "{{ argus_etc_path }}/tls"
 argus_home_path: "/var/lib/argus"
-argus_home_app_path: "{{ argus_home_path }}/app"
-argus_home_config_path: "{{ argus_home_path }}/config"
-argus_runtime_path: "/var/run/argus"
 argus_environment: production
 argus_db_user: argus
 argus_db_name: argus
 argus_db_data_path: /var/lib/pgsql/data
 argus_db_socket_path: /var/run/postgresql
-argus_puma_socket_path: /var/run/argus/puma
-argus_puma_socket: /var/run/argus/puma/puma.sock
+argus_puma_socket_path: "{{ argus_run_path }}/puma/"
+argus_puma_socket: "{{ argus_puma_socket_path }}/puma.sock"
 argus_puma_workers: 2
 argus_puma_min_threads: 1
 argus_puma_max_threads: 5
@@ -53,8 +53,8 @@ argus_redis_service: redis
 argus_redis_user: redis
 argus_redis_group: redis
 argus_redis_conf: /etc/redis/redis.conf
-argus_redis_socket_path: /var/run/redis
-argus_redis_socket: /var/run/redis/redis.sock
+argus_redis_socket_path: /run/redis
+argus_redis_socket: /run/redis/redis.sock
 
 argus_postgresql_service: postgresql
 argus_postgresql_user: postgres

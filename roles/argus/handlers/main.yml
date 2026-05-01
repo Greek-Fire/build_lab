@@ -30,8 +30,3 @@
     name: httpd
     state: restarted
     daemon_reload: true
-
-- name: Reload sysctl
-  ansible.builtin.command:
-    cmd: sysctl --system
-  changed_when: true

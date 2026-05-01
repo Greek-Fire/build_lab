@@ -23,7 +23,6 @@
     owner: root
     group: root
     mode: "0640"
-  notify: Reload sysctl1
 
 - name: Configure Redis systemd runtime directory
   ansible.builtin.template:
