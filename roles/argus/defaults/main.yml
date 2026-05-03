@@ -36,6 +36,7 @@ argus_user: argus
 argus_group: argus
 argus_etc_path: /etc/argus
 argus_run_path: /var/run/argus
+argus_script_path: /usr/local/sbin/argus-maintane
 argus_cert_path: "{{ argus_etc_path }}/tls"
 argus_home_path: "/var/lib/argus"
 argus_environment: production

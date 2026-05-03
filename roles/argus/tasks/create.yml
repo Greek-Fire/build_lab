@@ -53,8 +53,11 @@
 
 - name: Create ENV
   ansible.builtin.template:
-    src: argus.env.j2
-    dest: /etc/argus/argus.env
-    mode: '0640'
-    owner: "{{ argus_user }}"
-    group: "{{ argus_group }}"
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode | default('0640') }}"
+    owner: "{{ item.user | default(argus_user) }}"
+    group: "{{ item.group | default(argus_group) }}"
+  loop:
+  - { dest: "{{ argus_script_path }}", src: "argus-maintane.j2", user: "root", group: "root", mode: '0700' }
+  - { dest: "/etc/argus/argus.env", src: "argus.env.j2", user: "root", group: "{{ argus_group }}" }

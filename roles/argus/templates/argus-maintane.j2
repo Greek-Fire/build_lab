@@ -1,0 +1,319 @@
+set -Eeuo pipefail
+
+APP_USER={{ argus_user }}
+APP_GROUP={{ argus_group }}
+SOCKET_GROUP="apache"
+HTTPD_USER="apache"
+
+ARGUS_SERVICE="argus.service"
+HTTPD_SERVICE="httpd.service"
+REDIS_SERVICE="redis.service"
+
+# Override if your PostgreSQL unit is versioned:
+#   ARGUS_POSTGRES_SERVICE=postgresql-16.service /usr/local/sbin/argus-stack restart
+POSTGRES_SERVICE="${ARGUS_POSTGRES_SERVICE:-postgresql.service}"
+
+# User-facing runtime path. On RHEL, /var/run is normally a symlink to /run.
+ARGUS_RUN={{ argus_run_path }}
+PUMA_DIR="{{ argus_run_path }}/puma"
+PUMA_SOCKET="{{ argus_run_path }}/puma/puma.sock"
+PUMA_PID="{{ argus_run_path }}/puma/puma.pid"
+PUMA_STATE="{{ argus_run_path }}/puma/puma.state"
+
+# Real path used by SELinux tooling.
+REAL_ARGUS_RUN={{ argus_run_path }}
+
+SELINUX_FCONTEXT_PATTERN="{{ argus_run_path }}(/.*)?"
+SELINUX_FCONTEXT_TYPE="httpd_var_run_t"
+
+log() {
+  printf '[argus-stack] %s\n' "$*"
+}
+
+warn() {
+  printf '[argus-stack] WARNING: %s\n' "$*" >&2
+}
+
+die() {
+  printf '[argus-stack] ERROR: %s\n' "$*" >&2
+  exit 1
+}
+
+usage() {
+  cat <<USAGE
+Usage:
+  argus-stack start
+  argus-stack stop
+  argus-stack restart
+  argus-stack status
+
+Environment:
+  ARGUS_POSTGRES_SERVICE={{argus_postgresql_module }} 
+
+Expected argus.service model:
+  User={{ argus_user }}
+  Group={{ argus_group }}
+  SupplementaryGroups=redis
+  Puma binds to unix://{{ argus_run_path }}/puma/puma.sock?umask=0007
+
+This script refreshes the Puma runtime directory on every run:
+  {{ argus_run_path }}       {{ argus_user }}:apache 2750
+  {{ argus_run_path }}/puma  {{ argus_user }}:apache 2750
+  SELinux type         httpd_var_run_t
+USAGE
+}
+
+require_root() {
+  [[ "${EUID}" -eq 0 ]] || die "Run this as root."
+}
+
+command_exists() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+selinux_enabled() {
+  command_exists getenforce && [[ "$(getenforce)" != "Disabled" ]]
+}
+
+unit_exists() {
+  systemctl list-unit-files "$1" >/dev/null 2>&1
+}
+
+require_users_groups() {
+  id "${APP_USER}" >/dev/null 2>&1 || die "Missing user: ${APP_USER}"
+  getent group "${APP_GROUP}" >/dev/null 2>&1 || die "Missing group: ${APP_GROUP}"
+  getent group "${SOCKET_GROUP}" >/dev/null 2>&1 || die "Missing group: ${SOCKET_GROUP}"
+  id "${HTTPD_USER}" >/dev/null 2>&1 || die "Missing user: ${HTTPD_USER}"
+}
+
+require_units() {
+  unit_exists "${ARGUS_SERVICE}" || die "Missing unit: ${ARGUS_SERVICE}"
+  unit_exists "${HTTPD_SERVICE}" || die "Missing unit: ${HTTPD_SERVICE}"
+  unit_exists "${REDIS_SERVICE}" || die "Missing unit: ${REDIS_SERVICE}"
+
+  if ! unit_exists "${POSTGRES_SERVICE}"; then
+    warn "Configured PostgreSQL unit not found: ${POSTGRES_SERVICE}"
+    warn "Available PostgreSQL-looking units:"
+    systemctl list-unit-files 'postgresql*.service' || true
+    die "Set ARGUS_POSTGRES_SERVICE=correct-unit-name and rerun."
+  fi
+}
+
+refresh_runtime() {
+  require_users_groups
+
+  log "Refreshing Puma runtime directories."
+
+  # 2750 = rwx r-x --- plus setgid.
+  # setgid forces files created inside the directory to inherit group apache.
+  install -d -o "${APP_USER}" -g "${SOCKET_GROUP}" -m 2750 "${ARGUS_RUN}"
+  install -d -o "${APP_USER}" -g "${SOCKET_GROUP}" -m 2750 "${PUMA_DIR}"
+
+  chown "${APP_USER}:${SOCKET_GROUP}" "${ARGUS_RUN}" "${PUMA_DIR}"
+  chmod 2750 "${ARGUS_RUN}" "${PUMA_DIR}"
+
+  if selinux_enabled; then
+    command_exists semanage || die "semanage missing. Install policycoreutils-python-utils."
+    command_exists restorecon || die "restorecon missing."
+
+    semanage fcontext -a -t "${SELINUX_FCONTEXT_TYPE}" "${SELINUX_FCONTEXT_PATTERN}" 2>/dev/null || \
+      semanage fcontext -m -t "${SELINUX_FCONTEXT_TYPE}" "${SELINUX_FCONTEXT_PATTERN}"
+
+    restorecon -RFv "${REAL_ARGUS_RUN}" >/dev/null || true
+  fi
+
+  sudo -u "${HTTPD_USER}" test -x "${ARGUS_RUN}" || die "${HTTPD_USER} cannot traverse ${ARGUS_RUN}"
+  sudo -u "${HTTPD_USER}" test -x "${PUMA_DIR}" || die "${HTTPD_USER} cannot traverse ${PUMA_DIR}"
+
+  if [[ -S "${PUMA_SOCKET}" ]]; then
+    sudo -u "${HTTPD_USER}" test -S "${PUMA_SOCKET}" || die "${HTTPD_USER} cannot stat ${PUMA_SOCKET}"
+  fi
+}
+
+clean_stale_puma_files_when_safe() {
+  if systemctl is-active --quiet "${ARGUS_SERVICE}"; then
+    log "${ARGUS_SERVICE} is active; not removing live Puma runtime files."
+    return 0
+  fi
+
+  log "Removing stale Puma socket, pid, and state files."
+  rm -f "${PUMA_SOCKET}" "${PUMA_PID}" "${PUMA_STATE}"
+}
+
+start_stack() {
+  require_units
+  refresh_runtime
+  clean_stale_puma_files_when_safe
+
+  log "Starting PostgreSQL: ${POSTGRES_SERVICE}"
+  systemctl start "${POSTGRES_SERVICE}"
+
+  log "Starting Redis: ${REDIS_SERVICE}"
+  systemctl start "${REDIS_SERVICE}"
+
+  log "Starting Argus/Puma/Rails: ${ARGUS_SERVICE}"
+  systemctl start "${ARGUS_SERVICE}"
+
+  log "Refreshing runtime after Puma socket creation."
+  refresh_runtime
+
+  log "Starting Apache: ${HTTPD_SERVICE}"
+  systemctl start "${HTTPD_SERVICE}"
+
+  log "Start complete."
+  show_status
+  run_checks
+}
+
+stop_stack() {
+  require_units
+  refresh_runtime
+
+  log "Stopping Apache: ${HTTPD_SERVICE}"
+  systemctl stop "${HTTPD_SERVICE}" 2>/dev/null || true
+
+  log "Stopping Argus/Puma/Rails: ${ARGUS_SERVICE}"
+  systemctl stop "${ARGUS_SERVICE}" 2>/dev/null || true
+
+  log "Stopping Redis: ${REDIS_SERVICE}"
+  systemctl stop "${REDIS_SERVICE}" 2>/dev/null || true
+
+  log "Stopping PostgreSQL: ${POSTGRES_SERVICE}"
+  systemctl stop "${POSTGRES_SERVICE}" 2>/dev/null || true
+
+  clean_stale_puma_files_when_safe
+  refresh_runtime
+
+  log "Stop complete."
+  show_status
+}
+
+restart_stack() {
+  require_units
+
+  log "Restarting Argus stack."
+
+  log "Stopping Apache: ${HTTPD_SERVICE}"
+  systemctl stop "${HTTPD_SERVICE}" 2>/dev/null || true
+
+  log "Stopping Argus/Puma/Rails: ${ARGUS_SERVICE}"
+  systemctl stop "${ARGUS_SERVICE}" 2>/dev/null || true
+
+  log "Stopping Redis: ${REDIS_SERVICE}"
+  systemctl stop "${REDIS_SERVICE}" 2>/dev/null || true
+
+  log "Stopping PostgreSQL: ${POSTGRES_SERVICE}"
+  systemctl stop "${POSTGRES_SERVICE}" 2>/dev/null || true
+
+  refresh_runtime
+  clean_stale_puma_files_when_safe
+
+  log "Starting PostgreSQL: ${POSTGRES_SERVICE}"
+  systemctl start "${POSTGRES_SERVICE}"
+
+  log "Starting Redis: ${REDIS_SERVICE}"
+  systemctl start "${REDIS_SERVICE}"
+
+  log "Starting Argus/Puma/Rails: ${ARGUS_SERVICE}"
+  systemctl start "${ARGUS_SERVICE}"
+
+  log "Refreshing runtime after Puma socket creation."
+  refresh_runtime
+
+  log "Starting Apache: ${HTTPD_SERVICE}"
+  systemctl start "${HTTPD_SERVICE}"
+
+  log "Restart complete."
+  show_status
+  run_checks
+}
+
+show_status() {
+  refresh_runtime
+
+  echo
+  log "Service state:"
+  systemctl --no-pager --full status \
+    "${POSTGRES_SERVICE}" \
+    "${REDIS_SERVICE}" \
+    "${ARGUS_SERVICE}" \
+    "${HTTPD_SERVICE}" || true
+
+  echo
+  log "Process ownership:"
+  ps -eo user,group,pid,ppid,cmd | grep -E 'postgres|redis|httpd|puma|bundle|ruby' | grep -v grep || true
+
+  echo
+  log "SELinux process labels:"
+  ps -eZ | grep -E 'postgres|redis|httpd|puma|bundle|ruby' || true
+
+  echo
+  log "Runtime path:"
+  namei -l "${PUMA_SOCKET}" 2>/dev/null || namei -l "${PUMA_DIR}" || true
+
+  echo
+  log "Runtime labels:"
+  ls -ldZ "${ARGUS_RUN}" "${PUMA_DIR}" 2>/dev/null || true
+  ls -lZ "${PUMA_SOCKET}" "${PUMA_PID}" "${PUMA_STATE}" 2>/dev/null || true
+
+  echo
+  log "Listening TCP sockets:"
+  ss -lntp | grep -E 'postgres|redis|httpd|puma|ruby|:5432|:6379|:443|:80|:3000|:9292' || true
+
+  echo
+  log "Listening Unix sockets:"
+  ss -xlpn | grep -E 'postgres|redis|puma|argus' || true
+}
+
+run_checks() {
+  echo
+  log "Connection checks:"
+
+  if [[ -S "${PUMA_SOCKET}" ]]; then
+    log "Testing Apache user access to Puma socket."
+    sudo -u "${HTTPD_USER}" curl -Ik --unix-socket "${PUMA_SOCKET}" http://localhost/ || true
+  else
+    warn "Puma socket does not exist: ${PUMA_SOCKET}"
+  fi
+
+  log "Testing HTTPS front door."
+  curl -Ik https://localhost || true
+
+  if selinux_enabled; then
+    echo
+    log "Recent SELinux AVC denials:"
+    ausearch -m AVC,USER_AVC,SELINUX_ERR,USER_SELINUX_ERR -ts recent 2>/dev/null || true
+  fi
+}
+
+main() {
+  require_root
+
+  local cmd="${1:-status}"
+
+  case "${cmd}" in
+    start)
+      start_stack
+      ;;
+    stop)
+      stop_stack
+      ;;
+    restart)
+      restart_stack
+      ;;
+    status)
+      show_status
+      run_checks
+      ;;
+    -h|--help|help)
+      usage
+      ;;
+    *)
+      usage
+      die "Unknown command: ${cmd}"
+      ;;
+  esac
+}
+
+main "$@"
+EOF
